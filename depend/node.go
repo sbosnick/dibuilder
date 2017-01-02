@@ -6,6 +6,13 @@ package depend
 
 import "go/types"
 
+// The fixed ID's used for the single-node-per-containter notes. These must
+// be negative.
+const (
+	rootNodeID    int = -2
+	missingNodeID int = -1
+)
+
 // A rootNode generates a code fragment to return the instance of its one
 // required type from the builder function. This type is the anchor of the
 // Container and it is expected that all other (useful) nodes will be a part
@@ -17,7 +24,7 @@ type rootNode struct {
 }
 
 func (r rootNode) ID() int {
-	panic("not implemented")
+	return rootNodeID
 }
 
 func (r rootNode) Generate() {
@@ -46,7 +53,7 @@ type missingNode struct {
 }
 
 func (m missingNode) ID() int {
-	panic("not implemented")
+	return missingNodeID
 }
 
 func (m missingNode) Generate() {
@@ -67,11 +74,15 @@ func (m missingNode) provides() []edge {
 // are the (non-error) results of the function.
 type funcNode struct {
 	container Container
+	id        int
 	function  types.Func
 }
 
 func (f funcNode) ID() int {
-	panic("not implemented")
+	if f.id < 0 {
+		panic("Non singleton nodes cannot have a negative id.")
+	}
+	return f.id
 }
 
 func (f funcNode) Generate() {

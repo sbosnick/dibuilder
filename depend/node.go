@@ -6,24 +6,17 @@ package depend
 
 import "go/types"
 
-// A commonNode give the base implementation of a node. It implements graph.Node
-// and give a reference to the Container in which the node is included.
-type commonNode struct {
-	id        int
-	container Container
-}
-
-func (c commonNode) ID() int {
-	return c.id
-}
-
 // A funcNode generates a code fragment to produce instances of the provided
 // types by calling a function (a constructor or other static factory). Its
 // required types are the parameters to the function and its provided types
 // are the (non-error) results of the function.
 type funcNode struct {
-	commonNode
-	function types.Func
+	container Container
+	function  types.Func
+}
+
+func (f funcNode) ID() int {
+	panic("not implemented")
 }
 
 func (f funcNode) Generate() {
@@ -44,8 +37,12 @@ func (f funcNode) provides() []edge {
 // of the transitive closure of the requirement of this node. There should be
 // at most one rootNode in a given Container.
 type rootNode struct {
-	commonNode
-	root edge
+	container Container
+	root      edge
+}
+
+func (r rootNode) ID() int {
+	panic("not implemented")
 }
 
 func (r rootNode) Generate() {
@@ -70,7 +67,11 @@ func (r rootNode) provides() []edge {
 // all nodes requirements have been met will not have any edges from its
 // missingNode to any other nodes.
 type missingNode struct {
-	commonNode
+	container Container
+}
+
+func (m missingNode) ID() int {
+	panic("not implemented")
 }
 
 func (m missingNode) Generate() {

@@ -28,11 +28,11 @@ func (c Container) From(graph.Node) []graph.Node {
 	panic("not implemented")
 }
 
-func (c Container) HasEdgeBetween(x graph.Node, y graph.Node) bool {
+func (c Container) To(graph.Node) []graph.Node {
 	panic("not implemented")
 }
 
-func (c Container) Edge(u graph.Node, v graph.Node) graph.Edge {
+func (c Container) HasEdgeBetween(x graph.Node, y graph.Node) bool {
 	panic("not implemented")
 }
 
@@ -40,7 +40,7 @@ func (c Container) HasEdgeFromTo(u graph.Node, v graph.Node) bool {
 	panic("not implemented")
 }
 
-func (c Container) To(graph.Node) []graph.Node {
+func (c Container) Edge(u graph.Node, v graph.Node) graph.Edge {
 	panic("not implemented")
 }
 

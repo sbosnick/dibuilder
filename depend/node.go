@@ -6,31 +6,6 @@ package depend
 
 import "go/types"
 
-// A funcNode generates a code fragment to produce instances of the provided
-// types by calling a function (a constructor or other static factory). Its
-// required types are the parameters to the function and its provided types
-// are the (non-error) results of the function.
-type funcNode struct {
-	container Container
-	function  types.Func
-}
-
-func (f funcNode) ID() int {
-	panic("not implemented")
-}
-
-func (f funcNode) Generate() {
-	panic("not implemented")
-}
-
-func (f funcNode) requires() []edge {
-	panic("not implemented")
-}
-
-func (f funcNode) provides() []edge {
-	panic("not implemented")
-}
-
 // A rootNode generates a code fragment to return the instance of its one
 // required type from the builder function. This type is the anchor of the
 // Container and it is expected that all other (useful) nodes will be a part
@@ -83,5 +58,30 @@ func (m missingNode) requires() []edge {
 }
 
 func (m missingNode) provides() []edge {
+	panic("not implemented")
+}
+
+// A funcNode generates a code fragment to produce instances of the provided
+// types by calling a function (a constructor or other static factory). Its
+// required types are the parameters to the function and its provided types
+// are the (non-error) results of the function.
+type funcNode struct {
+	container Container
+	function  types.Func
+}
+
+func (f funcNode) ID() int {
+	panic("not implemented")
+}
+
+func (f funcNode) Generate() {
+	panic("not implemented")
+}
+
+func (f funcNode) requires() []edge {
+	panic("not implemented")
+}
+
+func (f funcNode) provides() []edge {
 	panic("not implemented")
 }

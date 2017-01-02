@@ -19,7 +19,7 @@ const (
 // of the transitive closure of the requirement of this node. There should be
 // at most one rootNode in a given Container.
 type rootNode struct {
-	container Container
+	container *Container
 	root      edge
 }
 
@@ -49,7 +49,7 @@ func (r rootNode) provides() []edge {
 // all nodes requirements have been met will not have any edges from its
 // missingNode to any other nodes.
 type missingNode struct {
-	container Container
+	container *Container
 }
 
 func (m missingNode) ID() int {
@@ -73,7 +73,7 @@ func (m missingNode) provides() []edge {
 // required types are the parameters to the function and its provided types
 // are the (non-error) results of the function.
 type funcNode struct {
-	container Container
+	container *Container
 	id        int
 	function  types.Func
 }

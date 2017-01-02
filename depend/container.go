@@ -14,45 +14,52 @@ import (
 // A Container exposes the dependancies implicit in set of constructors or
 // static factories as a directed graph.Container implements the
 // graph.Directed interface from github.com/gonum/graph.
-type Container struct{}
+type Container struct {
+	dummy int // temporarily needed so that two different Container's have different addresses
+}
 
-func (c Container) Has(graph.Node) bool {
+func (c *Container) Has(node graph.Node) bool {
+	switch n := node.(type) {
+	case *missingNode:
+		return n.container == c
+	default:
+		return false
+	}
+}
+
+func (c *Container) Nodes() []graph.Node {
 	panic("not implemented")
 }
 
-func (c Container) Nodes() []graph.Node {
+func (c *Container) From(graph.Node) []graph.Node {
 	panic("not implemented")
 }
 
-func (c Container) From(graph.Node) []graph.Node {
+func (c *Container) To(graph.Node) []graph.Node {
 	panic("not implemented")
 }
 
-func (c Container) To(graph.Node) []graph.Node {
+func (c *Container) HasEdgeBetween(x graph.Node, y graph.Node) bool {
 	panic("not implemented")
 }
 
-func (c Container) HasEdgeBetween(x graph.Node, y graph.Node) bool {
+func (c *Container) HasEdgeFromTo(u graph.Node, v graph.Node) bool {
 	panic("not implemented")
 }
 
-func (c Container) HasEdgeFromTo(u graph.Node, v graph.Node) bool {
+func (c *Container) Edge(u graph.Node, v graph.Node) graph.Edge {
 	panic("not implemented")
 }
 
-func (c Container) Edge(u graph.Node, v graph.Node) graph.Edge {
-	panic("not implemented")
-}
-
-func (c Container) SetRoot(root types.Type) {
+func (c *Container) SetRoot(root types.Type) {
 	panic("Not implemented")
 }
 
-func (c Container) Root() (graph.Node, error) {
+func (c *Container) Root() (graph.Node, error) {
 	panic("Not implemented")
 }
 
-func (c Container) AddFunc(f types.Func) {
+func (c *Container) AddFunc(f types.Func) {
 	panic("Not implemented")
 }
 

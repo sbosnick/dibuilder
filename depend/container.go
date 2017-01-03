@@ -18,6 +18,7 @@ type Container struct {
 	dummy int // temporarily needed so that two different Container's have different addresses
 }
 
+// Has returns whether a node exists within the Container.
 func (c *Container) Has(node graph.Node) bool {
 	switch n := node.(type) {
 	case *missingNode:
@@ -27,16 +28,27 @@ func (c *Container) Has(node graph.Node) bool {
 	}
 }
 
+// Nodes returns all of the nodes within the Container.
 func (c *Container) Nodes() []graph.Node {
-	panic("not implemented")
+	var nodes []graph.Node
+
+	nodes = append(nodes, missingNode{container: c})
+
+	return nodes
 }
 
+// From returns all nodes that can be reached directly from the given node.
 func (c *Container) From(graph.Node) []graph.Node {
-	panic("not implemented")
+	var nodes []graph.Node
+
+	return nodes
 }
 
+// To returns all nodes that can reach directly to the given node.
 func (c *Container) To(graph.Node) []graph.Node {
-	panic("not implemented")
+	var nodes []graph.Node
+
+	return nodes
 }
 
 func (c *Container) HasEdgeBetween(x graph.Node, y graph.Node) bool {

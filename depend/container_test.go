@@ -41,3 +41,33 @@ func TestContainerDoesNotHasMissingNodeForOtherContainer(t *testing.T) {
 
 	assert.False(t, result, "Container has missing node for a different container")
 }
+
+func TestZeroContainerReturnsOneNode(t *testing.T) {
+	sut := &Container{}
+	nodes := sut.Nodes()
+
+	assert.Len(t, nodes, 1, "Unexpected number of  nodes")
+}
+
+func TestZeroContainerReturnsMissingNode(t *testing.T) {
+	sut := &Container{}
+	nodes := sut.Nodes()
+
+	assert.IsType(t, missingNode{}, nodes[0], "Unexpected node type")
+}
+
+func TestNodeOfZeroContainerHasNoFromNodes(t *testing.T) {
+	sut := &Container{}
+	node := sut.Nodes()[0]
+	fromNodes := sut.From(node)
+
+	assert.Empty(t, fromNodes)
+}
+
+func TestNodeOfZeroContainerHsNoToNodes(t *testing.T) {
+	sut := &Container{}
+	node := sut.Nodes()[0]
+	toNodes := sut.To(node)
+
+	assert.Empty(t, toNodes)
+}

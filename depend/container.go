@@ -15,7 +15,7 @@ import (
 // static factories as a directed graph.Container implements the
 // graph.Directed interface from github.com/gonum/graph.
 type Container struct {
-	dummy int // temporarily needed so that two different Container's have different addresses
+	root types.Type
 }
 
 // Has returns whether a node exists within the Container.
@@ -63,12 +63,20 @@ func (c *Container) Edge(u graph.Node, v graph.Node) graph.Edge {
 	panic("not implemented")
 }
 
+// SetRoot sets the root type for the Container. A Container for which a root
+// type has been set has a root node.
 func (c *Container) SetRoot(root types.Type) {
-	panic("Not implemented")
+	c.root = root
 }
 
+// Root returns the root node of the container or ErrNoRoot is a root
+// has not been set.
 func (c *Container) Root() (graph.Node, error) {
-	panic("Not implemented")
+	if c.root == nil {
+		return nil, ErrNoRoot
+	}
+
+	return rootNode{container: c}, nil
 }
 
 func (c *Container) AddFunc(f types.Func) {

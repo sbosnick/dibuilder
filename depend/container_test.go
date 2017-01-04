@@ -2,10 +2,11 @@
 // Use of this source code is governed by the GNU General Public License version 3.
 // See the file COPYING for your rights under that license.
 
-// Package depend provides the core data types for the buildtime dependancy injection system.
 package depend
 
 import (
+	"go/token"
+	"go/types"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -70,4 +71,23 @@ func TestNodeOfZeroContainerHsNoToNodes(t *testing.T) {
 	toNodes := sut.To(node)
 
 	assert.Empty(t, toNodes)
+}
+
+func TestZeroContainerRootIsError(t *testing.T) {
+	sut := &Container{}
+	_, err := sut.Root()
+
+	assert.Error(t, err, "expected error not returned")
+}
+
+func TestRootedContainerRootIsRootNode(t *testing.T) {
+	pkg := types.NewPackage("path", "mypackage")
+	name := types.NewTypeName(token.NoPos, pkg, "MyIntType", types.Typ[types.Int])
+
+	sut := &Container{}
+	sut.SetRoot(name.Type())
+	root, err := sut.Root()
+
+	assert.NoError(t, err, "unexpected error in getting the container root")
+	assert.IsType(t, rootNode{}, root, "unexpected node type for the root node")
 }

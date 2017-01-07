@@ -36,6 +36,10 @@ func (c *Container) Nodes() []graph.Node {
 
 	nodes = append(nodes, missingNode{container: c})
 
+	if c.hasRoot() {
+		nodes = append(nodes, rootNode{container: c})
+	}
+
 	return nodes
 }
 

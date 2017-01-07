@@ -116,3 +116,14 @@ func TestRootedContainerDoesNotHasRootNodeForOtherContainer(t *testing.T) {
 
 	assert.False(t, result, "Container did not had rootNode for other Containter")
 }
+
+func TestRootedContainerReturnsRootNode(t *testing.T) {
+	pkg := types.NewPackage("path", "mypackage")
+	name := types.NewTypeName(token.NoPos, pkg, "MyIntType", types.Typ[types.Int])
+
+	sut := &Container{}
+	sut.SetRoot(name.Type())
+	nodes := sut.Nodes()
+
+	assert.Contains(t, nodes, rootNode{container: sut}, "Root node is missing.")
+}

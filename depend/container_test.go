@@ -91,3 +91,28 @@ func TestRootedContainerRootIsRootNode(t *testing.T) {
 	assert.NoError(t, err, "unexpected error in getting the container root")
 	assert.IsType(t, rootNode{}, root, "unexpected node type for the root node")
 }
+
+func TestRootedContainerHasRootNode(t *testing.T) {
+	pkg := types.NewPackage("path", "mypackage")
+	name := types.NewTypeName(token.NoPos, pkg, "MyIntType", types.Typ[types.Int])
+
+	sut := &Container{}
+	sut.SetRoot(name.Type())
+	root := rootNode{container: sut}
+	result := sut.Has(&root)
+
+	assert.True(t, result, "Container did not have a rootNode")
+}
+
+func TestRootedContainerDoesNotHasRootNodeForOtherContainer(t *testing.T) {
+	pkg := types.NewPackage("path", "mypackage")
+	name := types.NewTypeName(token.NoPos, pkg, "MyIntType", types.Typ[types.Int])
+	other := &Container{}
+	root := rootNode{container: other}
+
+	sut := &Container{}
+	sut.SetRoot(name.Type())
+	result := sut.Has(&root)
+
+	assert.False(t, result, "Container did not had rootNode for other Containter")
+}

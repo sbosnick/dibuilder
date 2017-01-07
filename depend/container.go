@@ -23,6 +23,8 @@ func (c *Container) Has(node graph.Node) bool {
 	switch n := node.(type) {
 	case *missingNode:
 		return n.container == c
+	case *rootNode:
+		return c.hasRoot() && n.container == c
 	default:
 		return false
 	}

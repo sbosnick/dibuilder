@@ -72,15 +72,20 @@ func (c *Container) SetRoot(root types.Type) {
 // Root returns the root node of the container or ErrNoRoot is a root
 // has not been set.
 func (c *Container) Root() (graph.Node, error) {
-	if c.root == nil {
-		return nil, ErrNoRoot
+	if c.hasRoot() {
+		return rootNode{container: c}, nil
 	}
 
-	return rootNode{container: c}, nil
+	return nil, ErrNoRoot
+
 }
 
 func (c *Container) AddFunc(f types.Func) {
 	panic("Not implemented")
+}
+
+func (c *Container) hasRoot() bool {
+	return c.root != nil
 }
 
 // An edge expreses the dependancy relationship between two nodes in a Container.

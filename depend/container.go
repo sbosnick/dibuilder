@@ -2,7 +2,7 @@
 // Use of this source code is governed by the GNU General Public License version 3.
 // See the file COPYING for your rights under that license.
 
-// Package depend provides the core data types for the buildtime dependancy injection system.
+// Package depend provides the core data types for the buildtime dependency injection system.
 package depend
 
 import (
@@ -11,7 +11,7 @@ import (
 	"github.com/gonum/graph"
 )
 
-// A Container exposes the dependancies implicit in set of constructors or
+// A Container exposes the dependencies implicit in set of constructors or
 // static factories as a directed graph.Container implements the
 // graph.Directed interface from github.com/gonum/graph.
 type Container struct {
@@ -94,10 +94,10 @@ func (c *Container) hasRoot() bool {
 	return c.root != nil
 }
 
-// An edge expreses the dependancy relationship between two nodes in a Container.
+// An edge expresses the dependency relationship between two nodes in a Container.
 // The relationship is from a node that provides a type to a node that requires
 // that type. The name of the edge is common to all edges for a given type that
-// orginate from the same node. The name is designed to be used as a variable
+// originate from the same node. The name is designed to be used as a variable
 // name in a generated builder function.
 type edge interface {
 	graph.Edge
@@ -108,7 +108,7 @@ type edge interface {
 // A node is an element in a Container that can generate a code fragment to
 // produce named instances of specific types but requires that named instances
 // of other types be produced first. The generated code uses they required, named
-// instances of the other types to provide the named instatances of the specific types.
+// instances of the other types to provide the named instances of the specific types.
 type node interface {
 	graph.Node
 	Generate()

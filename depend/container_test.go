@@ -114,7 +114,7 @@ func TestRootedContainerDoesNotHasRootNodeForOtherContainer(t *testing.T) {
 	sut.SetRoot(name.Type())
 	result := sut.Has(&root)
 
-	assert.False(t, result, "Container did not had rootNode for other Containter")
+	assert.False(t, result, "Container did not had rootNode for other Container")
 }
 
 func TestRootedContainerReturnsRootNode(t *testing.T) {

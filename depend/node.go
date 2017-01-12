@@ -6,7 +6,7 @@ package depend
 
 import "go/types"
 
-// The fixed ID's used for the single-node-per-containter notes. These must
+// The fixed ID's used for the single-node-per-container notes. These must
 // be negative.
 const (
 	rootNodeID    int = -2
@@ -41,8 +41,8 @@ func (r rootNode) provides() []edge {
 
 // A missingNode is a placeholder for another type of node that has not yet
 // been added to the Container. It allows the requirements of a node to be
-// expressed in the Container before the provider that can satify those
-// requirments has been added. A missingNode does not itself have any requirments.
+// expressed in the Container before the provider that can satisfy those
+// requirements has been added. A missingNode does not itself have any requirements.
 // An attempt to generate a code fragment for a missingNode is an error which
 // indicates that a requirement for some other node has not been met. There
 // should be exactly one missingNode in a given Container. A Container in which

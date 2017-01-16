@@ -4,34 +4,20 @@
 
 package depend
 
-import (
-	"go/types"
+import "github.com/gonum/graph"
 
-	"github.com/gonum/graph"
-)
-
-type edgeImpl struct{}
-
-func newEdge(from node, to node, name string, typ types.Type) edgeImpl {
-	panic("not implemented")
+type edgeImpl struct {
+	from, to graph.Node
 }
 
 func (e edgeImpl) From() graph.Node {
-	panic("not implemented")
+	return e.from
 }
 
 func (e edgeImpl) To() graph.Node {
-	panic("not implemented")
+	return e.to
 }
 
 func (e edgeImpl) Weight() float64 {
-	panic("not implemented")
-}
-
-func (e edgeImpl) name() string {
-	panic("not implemented")
-}
-
-func (e edgeImpl) edgeType() types.Type {
-	panic("not implemented")
+	return 1.0
 }

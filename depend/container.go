@@ -71,8 +71,10 @@ func (c *Container) To(node graph.Node) []graph.Node {
 	return nodes
 }
 
+// HasEdgeBetween returns whether an edge exists between nodes x and y without considering
+// the direction.
 func (c *Container) HasEdgeBetween(x graph.Node, y graph.Node) bool {
-	panic("not implemented")
+	return c.HasEdgeFromTo(x, y) || c.HasEdgeFromTo(y, x)
 }
 
 // HasEdgeFromTo returns whether an edge exists in the Container from u to v.

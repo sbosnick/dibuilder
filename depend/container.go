@@ -21,9 +21,9 @@ type Container struct {
 // Has returns whether a node exists within the Container.
 func (c *Container) Has(node graph.Node) bool {
 	switch n := node.(type) {
-	case *missingNode:
+	case missingNode:
 		return n.container == c
-	case *rootNode:
+	case rootNode:
 		return c.hasRoot() && n.container == c
 	default:
 		return false
@@ -44,15 +44,29 @@ func (c *Container) Nodes() []graph.Node {
 }
 
 // From returns all nodes that can be reached directly from the given node.
-func (c *Container) From(graph.Node) []graph.Node {
+func (c *Container) From(node graph.Node) []graph.Node {
 	var nodes []graph.Node
+
+	switch node.(type) {
+	case missingNode:
+		if c.hasRoot() {
+			nodes = append(nodes, rootNode{container: c})
+		}
+	}
 
 	return nodes
 }
 
 // To returns all nodes that can reach directly to the given node.
-func (c *Container) To(graph.Node) []graph.Node {
+func (c *Container) To(node graph.Node) []graph.Node {
 	var nodes []graph.Node
+
+	switch node.(type) {
+	case rootNode:
+		if c.hasRoot() {
+			nodes = append(nodes, missingNode{container: c})
+		}
+	}
 
 	return nodes
 }

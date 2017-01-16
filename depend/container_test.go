@@ -9,6 +9,7 @@ import (
 	"go/types"
 	"testing"
 
+	"github.com/gonum/graph"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -28,7 +29,7 @@ func TestContainerDoesNotHasForeignNodeType(t *testing.T) {
 func TestContainerHasMissingNode(t *testing.T) {
 	sut := Container{}
 	missing := missingNode{container: &sut}
-	result := sut.Has(&missing)
+	result := sut.Has(missing)
 
 	assert.True(t, result, "Container did not have a missingNode")
 }
@@ -99,7 +100,7 @@ func TestRootedContainerHasRootNode(t *testing.T) {
 	sut := &Container{}
 	sut.SetRoot(name.Type())
 	root := rootNode{container: sut}
-	result := sut.Has(&root)
+	result := sut.Has(root)
 
 	assert.True(t, result, "Container did not have a rootNode")
 }
@@ -126,4 +127,80 @@ func TestRootedContainerReturnsRootNode(t *testing.T) {
 	nodes := sut.Nodes()
 
 	assert.Contains(t, nodes, rootNode{container: sut}, "Root node is missing.")
+}
+
+func TestRootedContainerHasNoNodesFromRoot(t *testing.T) {
+	pkg := types.NewPackage("path", "mypackage")
+	name := types.NewTypeName(token.NoPos, pkg, "MyIntType", types.Typ[types.Int])
+
+	sut := &Container{}
+	sut.SetRoot(name.Type())
+	root, _ := sut.Root()
+	fromNodes := sut.From(root)
+
+	assert.Empty(t, fromNodes)
+}
+
+func containsNode(nodes []graph.Node, expected graph.Node) assert.Comparison {
+	return func() bool {
+		for _, node := range nodes {
+			if node.ID() == expected.ID() {
+				return true
+			}
+		}
+
+		return false
+	}
+}
+
+func getNodeIDs(nodes []graph.Node) []int {
+	var ids []int
+
+	for _, node := range nodes {
+		ids = append(ids, node.ID())
+	}
+
+	return ids
+}
+
+func TestRootedContinerHasRootNodeFromMissingNode(t *testing.T) {
+	pkg := types.NewPackage("path", "mypackage")
+	name := types.NewTypeName(token.NoPos, pkg, "MyIntType", types.Typ[types.Int])
+
+	sut := &Container{}
+	sut.SetRoot(name.Type())
+	missing := missingNode{container: sut}
+	fromNodes := sut.From(missing)
+
+	root, _ := sut.Root()
+	assert.Condition(t, containsNode(fromNodes, root),
+		"No edge from missingNode to rootNode: %v does not contain %v",
+		getNodeIDs(fromNodes), root.ID())
+}
+
+func TestRootedContainerHasMissingNodeToRootNode(t *testing.T) {
+	pkg := types.NewPackage("path", "mypackage")
+	name := types.NewTypeName(token.NoPos, pkg, "MyIntType", types.Typ[types.Int])
+
+	sut := &Container{}
+	sut.SetRoot(name.Type())
+	root, _ := sut.Root()
+	toNodes := sut.To(root)
+
+	missing := missingNode{container: sut}
+	assert.Condition(t, containsNode(toNodes, missing),
+		"No edge from missingNode to rootNode: %v does not contain %v",
+		getNodeIDs(toNodes), missing.ID())
+}
+
+func TestRootedContarainerHasNoNodesToMissingNode(t *testing.T) {
+	pkg := types.NewPackage("path", "mypackage")
+	name := types.NewTypeName(token.NoPos, pkg, "MyIntType", types.Typ[types.Int])
+
+	sut := &Container{}
+	sut.SetRoot(name.Type())
+	missing := missingNode{container: sut}
+	toNodes := sut.To(missing)
+
+	assert.Empty(t, toNodes, "Unexpected edge to the missingNode")
 }

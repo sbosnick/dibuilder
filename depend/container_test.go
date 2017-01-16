@@ -81,12 +81,18 @@ func TestZeroContainerRootIsError(t *testing.T) {
 	assert.Error(t, err, "expected error not returned")
 }
 
-func TestRootedContainerRootIsRootNode(t *testing.T) {
+func createRootedContainer() *Container {
 	pkg := types.NewPackage("path", "mypackage")
 	name := types.NewTypeName(token.NoPos, pkg, "MyIntType", types.Typ[types.Int])
 
-	sut := &Container{}
-	sut.SetRoot(name.Type())
+	container := &Container{}
+	container.SetRoot(name.Type())
+
+	return container
+}
+
+func TestRootedContainerRootIsRootNode(t *testing.T) {
+	sut := createRootedContainer()
 	root, err := sut.Root()
 
 	assert.NoError(t, err, "unexpected error in getting the container root")
@@ -94,11 +100,7 @@ func TestRootedContainerRootIsRootNode(t *testing.T) {
 }
 
 func TestRootedContainerHasRootNode(t *testing.T) {
-	pkg := types.NewPackage("path", "mypackage")
-	name := types.NewTypeName(token.NoPos, pkg, "MyIntType", types.Typ[types.Int])
-
-	sut := &Container{}
-	sut.SetRoot(name.Type())
+	sut := createRootedContainer()
 	root := rootNode{container: sut}
 	result := sut.Has(root)
 
@@ -106,35 +108,24 @@ func TestRootedContainerHasRootNode(t *testing.T) {
 }
 
 func TestRootedContainerDoesNotHasRootNodeForOtherContainer(t *testing.T) {
-	pkg := types.NewPackage("path", "mypackage")
-	name := types.NewTypeName(token.NoPos, pkg, "MyIntType", types.Typ[types.Int])
 	other := &Container{}
 	root := rootNode{container: other}
 
-	sut := &Container{}
-	sut.SetRoot(name.Type())
+	sut := createRootedContainer()
 	result := sut.Has(&root)
 
 	assert.False(t, result, "Container did not had rootNode for other Container")
 }
 
 func TestRootedContainerReturnsRootNode(t *testing.T) {
-	pkg := types.NewPackage("path", "mypackage")
-	name := types.NewTypeName(token.NoPos, pkg, "MyIntType", types.Typ[types.Int])
-
-	sut := &Container{}
-	sut.SetRoot(name.Type())
+	sut := createRootedContainer()
 	nodes := sut.Nodes()
 
 	assert.Contains(t, nodes, rootNode{container: sut}, "Root node is missing.")
 }
 
 func TestRootedContainerHasNoNodesFromRoot(t *testing.T) {
-	pkg := types.NewPackage("path", "mypackage")
-	name := types.NewTypeName(token.NoPos, pkg, "MyIntType", types.Typ[types.Int])
-
-	sut := &Container{}
-	sut.SetRoot(name.Type())
+	sut := createRootedContainer()
 	root, _ := sut.Root()
 	fromNodes := sut.From(root)
 
@@ -164,11 +155,7 @@ func getNodeIDs(nodes []graph.Node) []int {
 }
 
 func TestRootedContinerHasRootNodeFromMissingNode(t *testing.T) {
-	pkg := types.NewPackage("path", "mypackage")
-	name := types.NewTypeName(token.NoPos, pkg, "MyIntType", types.Typ[types.Int])
-
-	sut := &Container{}
-	sut.SetRoot(name.Type())
+	sut := createRootedContainer()
 	missing := missingNode{container: sut}
 	fromNodes := sut.From(missing)
 
@@ -179,11 +166,7 @@ func TestRootedContinerHasRootNodeFromMissingNode(t *testing.T) {
 }
 
 func TestRootedContainerHasMissingNodeToRootNode(t *testing.T) {
-	pkg := types.NewPackage("path", "mypackage")
-	name := types.NewTypeName(token.NoPos, pkg, "MyIntType", types.Typ[types.Int])
-
-	sut := &Container{}
-	sut.SetRoot(name.Type())
+	sut := createRootedContainer()
 	root, _ := sut.Root()
 	toNodes := sut.To(root)
 
@@ -194,11 +177,7 @@ func TestRootedContainerHasMissingNodeToRootNode(t *testing.T) {
 }
 
 func TestRootedContarainerHasNoNodesToMissingNode(t *testing.T) {
-	pkg := types.NewPackage("path", "mypackage")
-	name := types.NewTypeName(token.NoPos, pkg, "MyIntType", types.Typ[types.Int])
-
-	sut := &Container{}
-	sut.SetRoot(name.Type())
+	sut := createRootedContainer()
 	missing := missingNode{container: sut}
 	toNodes := sut.To(missing)
 
@@ -206,11 +185,7 @@ func TestRootedContarainerHasNoNodesToMissingNode(t *testing.T) {
 }
 
 func TestRootedContainerHasEdgeFromMissingNodeToRootNode(t *testing.T) {
-	pkg := types.NewPackage("path", "mypackage")
-	name := types.NewTypeName(token.NoPos, pkg, "MyIntType", types.Typ[types.Int])
-
-	sut := &Container{}
-	sut.SetRoot(name.Type())
+	sut := createRootedContainer()
 	missing := missingNode{container: sut}
 	root, _ := sut.Root()
 
@@ -218,11 +193,7 @@ func TestRootedContainerHasEdgeFromMissingNodeToRootNode(t *testing.T) {
 }
 
 func TestRootedContainerDoesNotHaveEdgeFromRootNoodToMissingNode(t *testing.T) {
-	pkg := types.NewPackage("path", "mypackage")
-	name := types.NewTypeName(token.NoPos, pkg, "MyIntType", types.Typ[types.Int])
-
-	sut := &Container{}
-	sut.SetRoot(name.Type())
+	sut := createRootedContainer()
 	missing := missingNode{container: sut}
 	root, _ := sut.Root()
 
@@ -230,11 +201,7 @@ func TestRootedContainerDoesNotHaveEdgeFromRootNoodToMissingNode(t *testing.T) {
 }
 
 func TestRootedContainerHasEdgeBetweenMissingNodeAndRootNode(t *testing.T) {
-	pkg := types.NewPackage("path", "mypackage")
-	name := types.NewTypeName(token.NoPos, pkg, "MyIntType", types.Typ[types.Int])
-
-	sut := &Container{}
-	sut.SetRoot(name.Type())
+	sut := createRootedContainer()
 	missing := missingNode{container: sut}
 	root, _ := sut.Root()
 

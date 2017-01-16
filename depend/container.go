@@ -75,8 +75,16 @@ func (c *Container) HasEdgeBetween(x graph.Node, y graph.Node) bool {
 	panic("not implemented")
 }
 
+// HasEdgeFromTo returns whether an edge exists in the Container from u to v.
 func (c *Container) HasEdgeFromTo(u graph.Node, v graph.Node) bool {
-	panic("not implemented")
+	switch u.(type) {
+	case missingNode:
+		if _, ok := v.(rootNode); ok && c.hasRoot() {
+			return true
+		}
+	}
+
+	return false
 }
 
 func (c *Container) Edge(u graph.Node, v graph.Node) graph.Edge {

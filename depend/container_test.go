@@ -204,3 +204,27 @@ func TestRootedContarainerHasNoNodesToMissingNode(t *testing.T) {
 
 	assert.Empty(t, toNodes, "Unexpected edge to the missingNode")
 }
+
+func TestRootedContainerHasEdgeFromMissingNodeToRootNode(t *testing.T) {
+	pkg := types.NewPackage("path", "mypackage")
+	name := types.NewTypeName(token.NoPos, pkg, "MyIntType", types.Typ[types.Int])
+
+	sut := &Container{}
+	sut.SetRoot(name.Type())
+	missing := missingNode{container: sut}
+	root, _ := sut.Root()
+
+	assert.True(t, sut.HasEdgeFromTo(missing, root), "No edge from missingNode to rootNode")
+}
+
+func TestRootedContainerDoesNotHaveEdgeFromRootNoodToMissingNode(t *testing.T) {
+	pkg := types.NewPackage("path", "mypackage")
+	name := types.NewTypeName(token.NoPos, pkg, "MyIntType", types.Typ[types.Int])
+
+	sut := &Container{}
+	sut.SetRoot(name.Type())
+	missing := missingNode{container: sut}
+	root, _ := sut.Root()
+
+	assert.False(t, sut.HasEdgeFromTo(root, missing), "No edge from rootNode to missingNode")
+}

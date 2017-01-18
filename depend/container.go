@@ -89,8 +89,14 @@ func (c *Container) HasEdgeFromTo(u graph.Node, v graph.Node) bool {
 	return false
 }
 
+// Edge returns the edge from u to v if such an edge exists and nil otherwise.
+// The node v must be directly reachable from u as defined by the From method.
 func (c *Container) Edge(u graph.Node, v graph.Node) graph.Edge {
-	panic("not implemented")
+	if c.HasEdgeFromTo(u, v) {
+		return &edgeImpl{from: u, to: v}
+	}
+
+	return nil
 }
 
 // SetRoot sets the root type for the Container. A Container for which a root

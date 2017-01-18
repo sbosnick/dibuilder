@@ -11,6 +11,7 @@ import (
 
 	"github.com/gonum/graph"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type mockNode struct{}
@@ -207,4 +208,34 @@ func TestRootedContainerHasEdgeBetweenMissingNodeAndRootNode(t *testing.T) {
 
 	assert.True(t, sut.HasEdgeBetween(missing, root), "No edge between missingNode and rootNode")
 	assert.True(t, sut.HasEdgeBetween(root, missing), "No edge between missingNode and rootNode")
+}
+
+func TestRootedContainerEdgeFromMissingNodeToRootNodeNotNil(t *testing.T) {
+	sut := createRootedContainer()
+	missing := missingNode{container: sut}
+	root, _ := sut.Root()
+	edge := sut.Edge(missing, root)
+
+	assert.NotNil(t, edge, "Edge from missingNode to rootNode was nil")
+}
+
+func TestRootedContainerEdgeFromRootNodeToMissingNodeIsNil(t *testing.T) {
+	sut := createRootedContainer()
+	missing := missingNode{container: sut}
+	root, _ := sut.Root()
+	edge := sut.Edge(root, missing)
+
+	assert.Nil(t, edge, "Edge from rootNode to missingNode was not nil")
+}
+
+func TestRootedContainerEdgeHoldsExpectedFromAndTo(t *testing.T) {
+	sut := createRootedContainer()
+	missing := missingNode{container: sut}
+	root, _ := sut.Root()
+	edge := sut.Edge(missing, root)
+
+	require.NotNil(t, edge.From(), "Unexpected nil From node in the Edge")
+	require.NotNil(t, edge.To(), "Unexpected nil To node in the Edge")
+	assert.Equal(t, missing.ID(), edge.From().ID(), "Unexpected From node in the Edge")
+	assert.Equal(t, root.ID(), edge.To().ID(), "Unexpected To node in the Edge")
 }

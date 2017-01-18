@@ -10,14 +10,14 @@ type edgeImpl struct {
 	from, to graph.Node
 }
 
-func (e edgeImpl) From() graph.Node {
+func (e *edgeImpl) From() graph.Node {
 	return e.from
 }
 
-func (e edgeImpl) To() graph.Node {
+func (e *edgeImpl) To() graph.Node {
 	return e.to
 }
 
-func (e edgeImpl) Weight() float64 {
+func (e *edgeImpl) Weight() float64 {
 	return 1.0
 }

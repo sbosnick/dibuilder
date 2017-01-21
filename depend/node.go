@@ -20,7 +20,6 @@ const (
 // at most one rootNode in a given Container.
 type rootNode struct {
 	container *Container
-	root      edge
 }
 
 func (r rootNode) ID() int {

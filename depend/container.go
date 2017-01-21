@@ -124,17 +124,6 @@ func (c *Container) hasRoot() bool {
 	return c.root != nil
 }
 
-// An edge expresses the dependency relationship between two nodes in a Container.
-// The relationship is from a node that provides a type to a node that requires
-// that type. The name of the edge is common to all edges for a given type that
-// originate from the same node. The name is designed to be used as a variable
-// name in a generated builder function.
-type edge interface {
-	graph.Edge
-	name() string
-	edgeType() types.Type
-}
-
 // A node is an element in a Container that can generate a code fragment to
 // produce instances of specific types but requires that instances  of other types
 // be produced first. The generated code uses the required instances of

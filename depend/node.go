@@ -31,12 +31,12 @@ func (r rootNode) Generate() {
 	panic("not implemented")
 }
 
-func (r rootNode) requires() []edge {
-	panic("not implemented")
+func (r rootNode) requires() []types.Type {
+	return []types.Type{r.container.root}
 }
 
-func (r rootNode) provides() []edge {
-	panic("not implemented")
+func (r rootNode) provides() []types.Type {
+	return nil
 }
 
 // A missingNode is a placeholder for another type of node that has not yet
@@ -60,12 +60,12 @@ func (m missingNode) Generate() {
 	panic("not implemented")
 }
 
-func (m missingNode) requires() []edge {
-	panic("not implemented")
+func (m missingNode) requires() []types.Type {
+	return nil
 }
 
-func (m missingNode) provides() []edge {
-	panic("not implemented")
+func (m missingNode) provides() []types.Type {
+	return nil
 }
 
 // A funcNode generates a code fragment to produce instances of the provided
@@ -75,7 +75,7 @@ func (m missingNode) provides() []edge {
 type funcNode struct {
 	container *Container
 	id        int
-	function  types.Func
+	function  *types.Func
 }
 
 func (f funcNode) ID() int {
@@ -89,10 +89,32 @@ func (f funcNode) Generate() {
 	panic("not implemented")
 }
 
-func (f funcNode) requires() []edge {
-	panic("not implemented")
+func (f funcNode) requires() []types.Type {
+	sig := f.function.Type().(*types.Signature)
+
+	return extractTypesForTuple(sig.Params(), false)
 }
 
-func (f funcNode) provides() []edge {
-	panic("not implemented")
+func (f funcNode) provides() []types.Type {
+	sig := f.function.Type().(*types.Signature)
+
+	return extractTypesForTuple(sig.Results(), true)
 }
+
+func extractTypesForTuple(tuple *types.Tuple, excludeError bool) []types.Type {
+	var result []types.Type
+	errType := types.Universe.Lookup("error").Type()
+
+	for i := 0; i < tuple.Len(); i++ {
+		typ := tuple.At(i).Type()
+		if !excludeError || !types.Identical(typ, errType) {
+			result = append(result, tuple.At(i).Type())
+		}
+	}
+
+	return result
+}
+
+var _ node = missingNode{}
+var _ node = rootNode{}
+var _ node = funcNode{}

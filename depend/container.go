@@ -136,12 +136,12 @@ type edge interface {
 }
 
 // A node is an element in a Container that can generate a code fragment to
-// produce named instances of specific types but requires that named instances
-// of other types be produced first. The generated code uses they required, named
-// instances of the other types to provide the named instances of the specific types.
+// produce instances of specific types but requires that instances  of other types
+// be produced first. The generated code uses the required instances of
+// the other types to provide the instances of the specific types.
 type node interface {
 	graph.Node
 	Generate()
-	requires() []edge
-	provides() []edge
+	requires() []types.Type
+	provides() []types.Type
 }

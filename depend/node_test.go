@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestRootNodeIDIsNegative(t *testing.T) {
@@ -141,4 +142,54 @@ func TestFuncNodeDoesNotProvideErrorType(t *testing.T) {
 	assert.Len(t, provides, 1, "Unexpected number of provided types on funcNode")
 	assert.NotContains(t, provides, types.Universe.Lookup("error").Type(),
 		"Unexpected type provided by funcNode")
+}
+
+func TestNewFuncNodeWithMethodIsError(t *testing.T) {
+	pkg := types.NewPackage("github.com/sbosnick/mytestpkg", "mytestpkg")
+	name := types.NewTypeName(token.NoPos, pkg, "MyType", nil)
+	typ := types.NewNamed(name, types.Typ[types.Int], nil)
+	receiver := types.NewParam(token.NoPos, pkg, "m", typ)
+	sig := types.NewSignature(receiver, types.NewTuple(), types.NewTuple(), false)
+	function := types.NewFunc(token.NoPos, pkg, "MyFunc", sig)
+
+	_, err := newFuncNode(nil, 0, function)
+
+	require.Error(t, err, "Expected error was not returned")
+	assert.IsType(t, &InvalidFuncError{}, err, "Error return not of expected type")
+}
+
+func TestNewFuncNodeWithEarlyErrorReturnIsError(t *testing.T) {
+	errtyp := types.Universe.Lookup("error").Type()
+	inttyp := types.Typ[types.Int]
+	sig := types.NewSignature(nil, types.NewTuple(),
+		types.NewTuple(
+			types.NewParam(token.NoPos, nil, "", errtyp),
+			types.NewParam(token.NoPos, nil, "", inttyp)),
+		false)
+	function := types.NewFunc(token.NoPos, nil, "MyFunc", sig)
+
+	_, err := newFuncNode(nil, 0, function)
+
+	require.Error(t, err, "Expected error was not returned")
+	assert.IsType(t, &InvalidFuncError{}, err, "Error return not of expected type")
+}
+
+func TestNewFuncNodeWithNoErrorReturnGivesNode(t *testing.T) {
+	function := makeFunc(types.Typ[types.Int], types.Typ[types.Bool], false)
+
+	node, err := newFuncNode(nil, 0, function)
+
+	require.NoError(t, err, "Unexpected error in newFuncNode call")
+	require.NotNil(t, node, "Returned funcNode was nil in newFuncNode call")
+	assert.Equal(t, function, node.function)
+}
+
+func TestNewFuncNodeWtihLastErrorReturnGivesNode(t *testing.T) {
+	function := makeFunc(types.Typ[types.Int], types.Typ[types.Bool], true)
+
+	node, err := newFuncNode(nil, 0, function)
+
+	require.NoError(t, err, "Unexpected error in newFuncNode call")
+	require.NotNil(t, node, "Returned funcNode was nil in newFuncNode call")
+	assert.Equal(t, function, node.function)
 }

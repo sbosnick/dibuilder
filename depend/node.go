@@ -77,6 +77,27 @@ type funcNode struct {
 	function  *types.Func
 }
 
+func newFuncNode(container *Container, id int, function *types.Func) (*funcNode, error) {
+	sig := function.Type().(*types.Signature)
+
+	// Check for a method.
+	if sig.Recv() != nil {
+		return nil, newInvalidFuncError(function, "cannot add methods to a Container")
+	}
+
+	// Check for an error return type that is not the last return type
+	if tuppleHasEarlyError(sig.Results()) {
+		return nil, newInvalidFuncError(function, "error return type must be last return type")
+	}
+
+	node := &funcNode{
+		container: container,
+		id:        id,
+		function:  function,
+	}
+	return node, nil
+}
+
 func (f funcNode) ID() int {
 	if f.id < 0 {
 		panic("Non singleton nodes cannot have a negative id.")
@@ -112,6 +133,20 @@ func extractTypesForTuple(tuple *types.Tuple, excludeError bool) []types.Type {
 	}
 
 	return result
+}
+
+func tuppleHasEarlyError(tuple *types.Tuple) bool {
+	errType := types.Universe.Lookup("error").Type()
+
+	// Note: "tuple.Len() - 1" is correct because an error
+	// as the last return type should return false
+	for i := 0; i < tuple.Len()-1; i++ {
+		if types.Identical(tuple.At(i).Type(), errType) {
+			return true
+		}
+	}
+
+	return false
 }
 
 var _ node = missingNode{}

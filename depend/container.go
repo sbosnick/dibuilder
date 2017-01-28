@@ -15,7 +15,8 @@ import (
 // static factories as a directed graph.Container implements the
 // graph.Directed interface from github.com/gonum/graph.
 type Container struct {
-	root types.Type
+	root  types.Type
+	nodes []node
 }
 
 // Has returns whether a node exists within the Container.
@@ -116,8 +117,24 @@ func (c *Container) Root() (graph.Node, error) {
 
 }
 
-func (c *Container) AddFunc(f types.Func) {
-	panic("Not implemented")
+// AddFunc adds function to the Container. function should be a constructor
+// or other static factory. The non-error return types of function are made
+// available as components that can satisfy the components required by other
+// functions added to the container or by SetRoot. The parameters to the function
+// are required to be satisfied by components in the Container for the Container
+// to be complete. function can have an error return type as its last return type.
+// AddFunc will return an InvalidFuncError for a function with an error return type
+// in any position except the last. It will also return an InvalidFuncError if a
+// method is passed in as function.
+func (c *Container) AddFunc(function *types.Func) error {
+	node, err := newFuncNode(c, len(c.nodes), function)
+	if err != nil {
+		return err
+	}
+
+	c.nodes = append(c.nodes, node)
+
+	return nil
 }
 
 func (c *Container) hasRoot() bool {

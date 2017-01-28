@@ -239,3 +239,14 @@ func TestRootedContainerEdgeHoldsExpectedFromAndTo(t *testing.T) {
 	assert.Equal(t, missing.ID(), edge.From().ID(), "Unexpected From node in the Edge")
 	assert.Equal(t, root.ID(), edge.To().ID(), "Unexpected To node in the Edge")
 }
+
+func TestContainerAddFuncAddsFuncNode(t *testing.T) {
+	function := makeFunc(types.Typ[types.Int], types.Typ[types.Bool], false)
+
+	sut := &Container{}
+	err := sut.AddFunc(function)
+
+	require.NoError(t, err, "Unexpected error returned from AddFunc")
+	require.Len(t, sut.nodes, 1, "AddFunc did not add node to Container")
+	assert.IsType(t, &funcNode{}, sut.nodes[0], "Node added by AddFunc had unexpected type")
+}

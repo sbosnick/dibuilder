@@ -250,3 +250,39 @@ func TestContainerAddFuncAddsFuncNode(t *testing.T) {
 	require.Len(t, sut.nodes, 1, "AddFunc did not add node to Container")
 	assert.IsType(t, &funcNode{}, sut.nodes[0], "Node added by AddFunc had unexpected type")
 }
+
+func TestConainerHasFuncNodeAfterAddFunc(t *testing.T) {
+	function := makeFunc(types.Typ[types.Int], types.Typ[types.Bool], false)
+
+	sut := &Container{}
+	_ = sut.AddFunc(function)
+	result := sut.Has(sut.nodes[0])
+
+	assert.True(t, result, "Container did not Has() node added by AddFunc")
+}
+
+func TestContainerNodesIncludesFuncNodeAfterAddFunc(t *testing.T) {
+	function := makeFunc(types.Typ[types.Int], types.Typ[types.Bool], false)
+
+	sut := &Container{}
+	_ = sut.AddFunc(function)
+	nodes := sut.Nodes()
+
+	assert.Condition(t, hasFuncNodeForFunction(nodes, function),
+		"Nodes() did not contain a funcNode for the expected function")
+
+}
+
+func hasFuncNodeForFunction(nodes []graph.Node, function *types.Func) func() bool {
+	return func() bool {
+		for _, node := range nodes {
+			if fn, ok := node.(*funcNode); ok {
+				if fn.function == function {
+					return true
+				}
+			}
+		}
+
+		return false
+	}
+}

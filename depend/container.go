@@ -26,6 +26,8 @@ func (c *Container) Has(node graph.Node) bool {
 		return n.container == c
 	case rootNode:
 		return c.hasRoot() && n.container == c
+	case *funcNode:
+		return n.container == c && n.ID() < len(c.nodes)
 	default:
 		return false
 	}
@@ -39,6 +41,10 @@ func (c *Container) Nodes() []graph.Node {
 
 	if c.hasRoot() {
 		nodes = append(nodes, rootNode{container: c})
+	}
+
+	for _, node := range c.nodes {
+		nodes = append(nodes, node)
 	}
 
 	return nodes

@@ -20,31 +20,31 @@ func newTypeNodeMap(hasher typeutil.Hasher) *typeNodeMap {
 	return &tnm
 }
 
-func (m *typeNodeMap) AddNode(typ types.Type, n node) {
+func (m *typeNodeMap) AddNode(typ types.Type, n commonNode) {
 	if m == nil {
 		panic("AddNode: attempt to add to a nil typeNodeMap")
 	}
 
 	result := m.typeMap.At(typ)
-	var nodes []node
+	var nodes []commonNode
 	if result != nil {
-		nodes = result.([]node)
+		nodes = result.([]commonNode)
 	}
 
 	nodes = append(nodes, n)
 	m.typeMap.Set(typ, nodes)
 }
 
-func (m *typeNodeMap) Nodes(typ types.Type) []node {
+func (m *typeNodeMap) Nodes(typ types.Type) []commonNode {
 	if m == nil {
-		var ret []node
+		var ret []commonNode
 		return ret
 	}
 
 	result := m.typeMap.At(typ)
-	var nodes []node
+	var nodes []commonNode
 	if result != nil {
-		nodes = result.([]node)
+		nodes = result.([]commonNode)
 	}
 
 	return nodes

@@ -14,13 +14,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestRootNodeIDIsNegative(t *testing.T) {
-	sut := rootNode{}
-	id := sut.ID()
-
-	assert.Condition(t, func() bool { return id < 0 }, "Non-negative ID()")
-}
-
 func TestMissingNodeIDIsNegative(t *testing.T) {
 	sut := missingNode{}
 	id := sut.ID()
@@ -28,13 +21,21 @@ func TestMissingNodeIDIsNegative(t *testing.T) {
 	assert.Condition(t, func() bool { return id < 0 }, "Non-negative ID()")
 }
 
-func TestSingletonNodesIDAreDifferent(t *testing.T) {
-	root := rootNode{}
-	missing := missingNode{}
-	id1 := root.ID()
-	id2 := missing.ID()
+func TestRootNodeWithNonNegativeIDReturnsExpectedID(t *testing.T) {
+	is := is.New(t)
+	expected := 1
 
-	assert.NotEqual(t, id1, id2, "rootNode.ID() == missingNode.ID()")
+	sut := newRootNode(nil, expected, nil)
+
+	is.Equal(sut.ID(), expected)
+}
+
+func TestRootNodeWithNegativeIDPanicsOnID(t *testing.T) {
+	is := is.New(t)
+
+	sut := newRootNode(nil, -2, nil)
+
+	is.Panic(func() { sut.ID() })
 }
 
 func TestFuncNodeWithNonNegativeIDReturnsExpectedID(t *testing.T) {
@@ -55,7 +56,7 @@ func TestFuncNodeWithNegativeIDPanicsOnID(t *testing.T) {
 func TestRootNodeProvidesNothing(t *testing.T) {
 	sut, _ := createRootedContainer()
 	root, _ := sut.Root()
-	rootnode := root.(rootNode)
+	rootnode := root.(*rootNode)
 
 	assert.Len(t, rootnode.provides(), 0, "Root node unexpectedly provides some types")
 }
@@ -64,10 +65,10 @@ func TestRootNodeRequiresTypeSetOnContainer(t *testing.T) {
 	is := is.New(t)
 	expected := types.Typ[types.Int]
 	container := &Container{}
-	container.SetRoot(expected)
+	_ = container.SetRoot(expected)
 
 	sut, _ := container.Root()
-	sutnode := sut.(rootNode)
+	sutnode := sut.(*rootNode)
 	requires := sutnode.requires()
 
 	is.Equal(len(requires), 1)

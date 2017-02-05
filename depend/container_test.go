@@ -89,17 +89,28 @@ func createRootedContainer() (*Container, types.Type) {
 	typ := types.NewNamed(name, types.Typ[types.Int], nil)
 
 	container := &Container{}
-	container.SetRoot(typ)
+	_ = container.SetRoot(typ)
 
 	return container, typ
 }
 
 func TestRootedContainerRootIsRootNode(t *testing.T) {
+	is := is.New(t)
+
 	sut, _ := createRootedContainer()
 	root, err := sut.Root()
 
-	assert.NoError(t, err, "unexpected error in getting the container root")
-	assert.IsType(t, rootNode{}, root, "unexpected node type for the root node")
+	is.NoErr(err)
+	is.OK(root, func() { _ = root.(*rootNode) })
+}
+
+func TestRootedContainerHasErrorOnSetRoot(t *testing.T) {
+	is := is.New(t)
+
+	sut, _ := createRootedContainer()
+	err := sut.SetRoot(types.Typ[types.Uint8])
+
+	is.Err(err)
 }
 
 func TestRootedContainerHasRootNode(t *testing.T) {
@@ -121,10 +132,15 @@ func TestRootedContainerDoesNotHasRootNodeForOtherContainer(t *testing.T) {
 }
 
 func TestRootedContainerReturnsRootNode(t *testing.T) {
-	sut, _ := createRootedContainer()
+	is := is.New(t)
+
+	sut, typ := createRootedContainer()
 	nodes := sut.Nodes()
 
-	assert.Contains(t, nodes, rootNode{container: sut}, "Root node is missing.")
+	rootnode := getRootNode(nodes)
+	otherrootnode, _ := sut.Root()
+	is.OK(rootnode, rootnode.root == typ)
+	is.Equal(rootnode, otherrootnode)
 }
 
 func TestRootedContainerHasNoNodesFromRoot(t *testing.T) {
@@ -145,6 +161,24 @@ func containsNode(nodes []graph.Node, expected graph.Node) assert.Comparison {
 
 		return false
 	}
+}
+
+func getRootNode(nodes []graph.Node) *rootNode {
+	for _, node := range nodes {
+		if n, ok := node.(*rootNode); ok {
+			return n
+		}
+	}
+	return nil
+}
+
+func containsMissingNode(nodes []graph.Node) bool {
+	for _, node := range nodes {
+		if _, ok := node.(missingNode); ok {
+			return true
+		}
+	}
+	return false
 }
 
 func getNodeIDs(nodes []graph.Node) []int {
@@ -169,14 +203,13 @@ func TestRootedContinerHasRootNodeFromMissingNode(t *testing.T) {
 }
 
 func TestRootedContainerHasMissingNodeToRootNode(t *testing.T) {
+	is := is.New(t)
+
 	sut, _ := createRootedContainer()
 	root, _ := sut.Root()
 	toNodes := sut.To(root)
 
-	missing := missingNode{container: sut}
-	assert.Condition(t, containsNode(toNodes, missing),
-		"No edge from missingNode to rootNode: %v does not contain %v",
-		getNodeIDs(toNodes), missing.ID())
+	is.OK(containsMissingNode(toNodes))
 }
 
 func TestRootedContarainerHasNoNodesToMissingNode(t *testing.T) {
@@ -188,11 +221,14 @@ func TestRootedContarainerHasNoNodesToMissingNode(t *testing.T) {
 }
 
 func TestRootedContainerHasEdgeFromMissingNodeToRootNode(t *testing.T) {
+	is := is.New(t)
+
 	sut, _ := createRootedContainer()
 	missing := missingNode{container: sut}
 	root, _ := sut.Root()
+	hasedge := sut.HasEdgeFromTo(missing, root)
 
-	assert.True(t, sut.HasEdgeFromTo(missing, root), "No edge from missingNode to rootNode")
+	is.OK(hasedge)
 }
 
 func TestRootedContainerDoesNotHaveEdgeFromRootNoodToMissingNode(t *testing.T) {
@@ -289,18 +325,6 @@ func hasFuncNodeForFunction(nodes []graph.Node, function *types.Func) func() boo
 	}
 }
 
-func hasRootNode(nodes []graph.Node) func() bool {
-	return func() bool {
-		for _, node := range nodes {
-			if _, ok := node.(rootNode); ok {
-				return true
-			}
-		}
-
-		return false
-	}
-}
-
 func TestRootedContainerWithFuncProvidingRootDoesNotHaveMissingEdge(t *testing.T) {
 	sut, typ := createRootedContainer()
 	sut.AddFunc(makeFunc(nil, typ, false))
@@ -321,13 +345,16 @@ func TestContainerWithUnsatifiedFuncRequirmentHasMissingEdge(t *testing.T) {
 }
 
 func TestContainerWithFuncProvidingRootHasEdgeFromFunc(t *testing.T) {
+	is := is.New(t)
+
 	sut, typ := createRootedContainer()
 	function := makeFunc(nil, typ, false)
 	sut.AddFunc(function)
 	node := findFuncNodeForFunction(sut.Nodes(), function)
 	nodes := sut.From(node)
 
-	assert.Condition(t, hasRootNode(nodes), "From() did not contain a rootNode")
+	rootnode := getRootNode(nodes)
+	is.OK(rootnode)
 }
 
 func findFuncNodeForFunction(nodes []graph.Node, function *types.Func) graph.Node {

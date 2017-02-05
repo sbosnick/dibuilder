@@ -9,7 +9,6 @@ import "go/types"
 // The fixed ID's used for the single-node-per-container notes. These must
 // be negative.
 const (
-	rootNodeID    int = -2
 	missingNodeID int = -1
 )
 
@@ -20,18 +19,23 @@ const (
 // at most one rootNode in a given Container.
 type rootNode struct {
 	container *Container
+	id        int
 	root      types.Type
 }
 
-func newRootNode(container *Container, root types.Type) *rootNode {
+func newRootNode(container *Container, id int, root types.Type) *rootNode {
 	return &rootNode{
 		container: container,
+		id:        id,
 		root:      root,
 	}
 }
 
 func (r rootNode) ID() int {
-	return rootNodeID
+	if r.id < 0 {
+		panic("Root node cannot have a negative id.")
+	}
+	return r.id
 }
 
 func (r rootNode) Generate() {
@@ -44,6 +48,10 @@ func (r rootNode) requires() []types.Type {
 
 func (r rootNode) provides() []types.Type {
 	return nil
+}
+
+func (r rootNode) getContainer() *Container {
+	return r.container
 }
 
 // A missingNode is a placeholder for another type of node that has not yet
@@ -73,6 +81,10 @@ func (m missingNode) requires() []types.Type {
 
 func (m missingNode) provides() []types.Type {
 	return nil
+}
+
+func (m missingNode) getContainer() *Container {
+	return m.container
 }
 
 // A funcNode generates a code fragment to produce instances of the provided
@@ -129,6 +141,10 @@ func (f funcNode) provides() []types.Type {
 	return extractTypesForTuple(sig.Results(), true)
 }
 
+func (f funcNode) getContainer() *Container {
+	return f.container
+}
+
 func extractTypesForTuple(tuple *types.Tuple, excludeError bool) []types.Type {
 	var result []types.Type
 	errType := types.Universe.Lookup("error").Type()
@@ -157,6 +173,6 @@ func tuppleHasEarlyError(tuple *types.Tuple) bool {
 	return false
 }
 
-var _ node = missingNode{}
-var _ node = rootNode{}
-var _ node = funcNode{}
+var _ commonNode = missingNode{}
+var _ commonNode = rootNode{}
+var _ commonNode = funcNode{}

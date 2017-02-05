@@ -18,7 +18,7 @@ import (
 // graph.Directed interface from github.com/gonum/graph.
 type Container struct {
 	rootnode   *rootNode
-	nodes      []node
+	nodes      []commonNode
 	providedBy *typeNodeMap
 	requiredBy *typeNodeMap
 }
@@ -28,10 +28,8 @@ func (c *Container) Has(node graph.Node) bool {
 	switch n := node.(type) {
 	case missingNode:
 		return n.container == c
-	case rootNode:
-		return c.hasRoot() && n.container == c
-	case *funcNode:
-		return n.container == c && n.ID() < len(c.nodes)
+	case commonNode:
+		return n.getContainer() == c && n.ID() < c.nextID()
 	default:
 		return false
 	}
@@ -42,10 +40,6 @@ func (c *Container) Nodes() []graph.Node {
 	var nodes []graph.Node
 
 	nodes = append(nodes, missingNode{container: c})
-
-	if c.hasRoot() {
-		nodes = append(nodes, rootNode{container: c})
-	}
 
 	for _, node := range c.nodes {
 		nodes = append(nodes, node)
@@ -60,12 +54,6 @@ func (c *Container) From(node graph.Node) []graph.Node {
 
 	switch node := node.(type) {
 	case missingNode:
-		// unprovided root
-		if c.hasUnprovidedRoot() {
-			nodes = append(nodes, rootNode{container: c})
-		}
-
-		// unprovided normal node
 		for _, typ := range c.requiredBy.Types() {
 			if len(c.providedBy.Nodes(typ)) == 0 {
 				for _, reqnode := range c.requiredBy.Nodes(typ) {
@@ -74,18 +62,7 @@ func (c *Container) From(node graph.Node) []graph.Node {
 			}
 		}
 
-	case *funcNode:
-		// provided root
-		if c.hasRoot() {
-			for _, provider := range c.providedBy.Nodes(c.rootnode.requires()[0]) {
-				if provider == node {
-					nodes = append(nodes, rootNode{container: c})
-					break
-				}
-			}
-		}
-
-		// provided normal node
+	case commonNode:
 		for _, provide := range node.provides() {
 			for _, requirer := range c.requiredBy.Nodes(provide) {
 				nodes = append(nodes, requirer)
@@ -101,7 +78,7 @@ func (c *Container) To(node graph.Node) []graph.Node {
 	var nodes []graph.Node
 
 	switch node.(type) {
-	case rootNode:
+	case *rootNode:
 		if c.hasRoot() {
 			nodes = append(nodes, missingNode{container: c})
 		}
@@ -120,7 +97,7 @@ func (c *Container) HasEdgeBetween(x graph.Node, y graph.Node) bool {
 func (c *Container) HasEdgeFromTo(u graph.Node, v graph.Node) bool {
 	switch u.(type) {
 	case missingNode:
-		if _, ok := v.(rootNode); ok && c.hasRoot() {
+		if _, ok := v.(*rootNode); ok && c.hasRoot() {
 			return true
 		}
 	}
@@ -140,15 +117,21 @@ func (c *Container) Edge(u graph.Node, v graph.Node) graph.Edge {
 
 // SetRoot sets the root type for the Container. A Container for which a root
 // type has been set has a root node.
-func (c *Container) SetRoot(root types.Type) {
-	c.rootnode = newRootNode(c, root)
+func (c *Container) SetRoot(root types.Type) error {
+	if c.hasRoot() {
+		return ErrRootAlreadySet
+	}
+
+	c.rootnode = newRootNode(c, c.nextID(), root)
+	c.addNode(c.rootnode)
+	return nil
 }
 
 // Root returns the root node of the container or ErrNoRoot is a root
 // has not been set.
 func (c *Container) Root() (graph.Node, error) {
 	if c.hasRoot() {
-		return *c.rootnode, nil
+		return c.rootnode, nil
 	}
 
 	return nil, ErrNoRoot
@@ -166,32 +149,18 @@ func (c *Container) Root() (graph.Node, error) {
 // method is passed in as function.
 func (c *Container) AddFunc(function *types.Func) error {
 	// create a new node
-	node, err := newFuncNode(c, len(c.nodes), function)
+	node, err := newFuncNode(c, c.nextID(), function)
 	if err != nil {
 		return err
 	}
 
-	// add the node to the nodes slice
-	c.nodes = append(c.nodes, node)
-
-	// add the node to the appropriate maps for its provides() and requires() types
-	c.ensureMaps()
-	for _, typ := range node.provides() {
-		c.providedBy.AddNode(typ, node)
-	}
-	for _, typ := range node.requires() {
-		c.requiredBy.AddNode(typ, node)
-	}
+	c.addNode(node)
 
 	return nil
 }
 
 func (c *Container) hasRoot() bool {
 	return c.rootnode != nil
-}
-
-func (c *Container) hasUnprovidedRoot() bool {
-	return c.rootnode != nil && len(c.providedBy.Nodes(c.rootnode.requires()[0])) == 0
 }
 
 func (c *Container) ensureMaps() {
@@ -204,13 +173,32 @@ func (c *Container) ensureMaps() {
 	c.providedBy = newTypeNodeMap(hasher)
 }
 
+func (c *Container) nextID() int {
+	return len(c.nodes)
+}
+
+func (c *Container) addNode(newNode commonNode) {
+	// add the node to the nodes slice
+	c.nodes = append(c.nodes, newNode)
+
+	// add the node to the appropriate maps for its provides() and requires() types
+	c.ensureMaps()
+	for _, typ := range newNode.provides() {
+		c.providedBy.AddNode(typ, newNode)
+	}
+	for _, typ := range newNode.requires() {
+		c.requiredBy.AddNode(typ, newNode)
+	}
+}
+
 // A node is an element in a Container that can generate a code fragment to
 // produce instances of specific types but requires that instances  of other types
 // be produced first. The generated code uses the required instances of
 // the other types to provide the instances of the specific types.
-type node interface {
+type commonNode interface {
 	graph.Node
 	Generate()
 	requires() []types.Type
 	provides() []types.Type
+	getContainer() *Container
 }

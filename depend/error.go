@@ -15,6 +15,11 @@ var (
 	// ErrNoRoot is the error used to indicate a root has not been
 	// set on a Container for an operation that requires such a root.
 	ErrNoRoot = errors.New("no root set for container")
+
+	// ErrRootAlreadySet is the error used to indicate that a root has
+	// already been set on a Container for an operation that only allows
+	// the root to be set once.
+	ErrRootAlreadySet = errors.New("root already set for container")
 )
 
 // An Error represents an error with an associated position in an

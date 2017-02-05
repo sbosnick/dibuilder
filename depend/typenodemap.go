@@ -49,3 +49,12 @@ func (m *typeNodeMap) Nodes(typ types.Type) []node {
 
 	return nodes
 }
+
+func (m *typeNodeMap) Types() []types.Type {
+	if m == nil {
+		var ret []types.Type
+		return ret
+	}
+
+	return m.typeMap.Keys()
+}

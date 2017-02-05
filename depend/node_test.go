@@ -52,7 +52,7 @@ func TestFuncNodeWithNegativeIDPanicsOnID(t *testing.T) {
 }
 
 func TestRootNodeProvidesNothing(t *testing.T) {
-	sut := createRootedContainer()
+	sut, _ := createRootedContainer()
 	root, _ := sut.Root()
 	rootnode := root.(rootNode)
 
@@ -89,8 +89,14 @@ func TestMissingNodeProvidesNothing(t *testing.T) {
 }
 
 func makeFunc(param, ret types.Type, returnsErr bool) *types.Func {
-	resultVar := types.NewVar(token.NoPos, nil, "", ret)
+	var paramTuple *types.Tuple
+	if param == nil {
+		paramTuple = types.NewTuple()
+	} else {
+		paramTuple = types.NewTuple(types.NewVar(token.NoPos, nil, "", param))
+	}
 
+	resultVar := types.NewVar(token.NoPos, nil, "", ret)
 	var retTuple *types.Tuple
 	if returnsErr {
 		errObj := types.Universe.Lookup("error")
@@ -100,10 +106,7 @@ func makeFunc(param, ret types.Type, returnsErr bool) *types.Func {
 		retTuple = types.NewTuple(resultVar)
 	}
 
-	sig := types.NewSignature(nil,
-		types.NewTuple(types.NewVar(token.NoPos, nil, "", param)),
-		retTuple,
-		false)
+	sig := types.NewSignature(nil, paramTuple, retTuple, false)
 	return types.NewFunc(token.NoPos, nil, "myfunc", sig)
 }
 

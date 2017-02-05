@@ -8,6 +8,8 @@ package depend
 import (
 	"go/types"
 
+	"golang.org/x/tools/go/types/typeutil"
+
 	"github.com/gonum/graph"
 )
 
@@ -15,8 +17,10 @@ import (
 // static factories as a directed graph.Container implements the
 // graph.Directed interface from github.com/gonum/graph.
 type Container struct {
-	root  types.Type
-	nodes []node
+	root       types.Type
+	nodes      []node
+	providedBy *typeNodeMap
+	requiredBy *typeNodeMap
 }
 
 // Has returns whether a node exists within the Container.
@@ -54,10 +58,38 @@ func (c *Container) Nodes() []graph.Node {
 func (c *Container) From(node graph.Node) []graph.Node {
 	var nodes []graph.Node
 
-	switch node.(type) {
+	switch node := node.(type) {
 	case missingNode:
-		if c.hasRoot() {
+		// unprovided root
+		if c.hasUnprovidedRoot() {
 			nodes = append(nodes, rootNode{container: c})
+		}
+
+		// unprovided normal node
+		for _, typ := range c.requiredBy.Types() {
+			if len(c.providedBy.Nodes(typ)) == 0 {
+				for _, reqnode := range c.requiredBy.Nodes(typ) {
+					nodes = append(nodes, reqnode)
+				}
+			}
+		}
+
+	case *funcNode:
+		// provided root
+		if c.hasRoot() {
+			for _, provider := range c.providedBy.Nodes(c.root) {
+				if provider == node {
+					nodes = append(nodes, rootNode{container: c})
+					break
+				}
+			}
+		}
+
+		// provided normal node
+		for _, provide := range node.provides() {
+			for _, requirer := range c.requiredBy.Nodes(provide) {
+				nodes = append(nodes, requirer)
+			}
 		}
 	}
 
@@ -133,18 +165,43 @@ func (c *Container) Root() (graph.Node, error) {
 // in any position except the last. It will also return an InvalidFuncError if a
 // method is passed in as function.
 func (c *Container) AddFunc(function *types.Func) error {
+	// create a new node
 	node, err := newFuncNode(c, len(c.nodes), function)
 	if err != nil {
 		return err
 	}
 
+	// add the node to the nodes slice
 	c.nodes = append(c.nodes, node)
+
+	// add the node to the appropriate maps for its provides() and requires() types
+	c.ensureMaps()
+	for _, typ := range node.provides() {
+		c.providedBy.AddNode(typ, node)
+	}
+	for _, typ := range node.requires() {
+		c.requiredBy.AddNode(typ, node)
+	}
 
 	return nil
 }
 
 func (c *Container) hasRoot() bool {
 	return c.root != nil
+}
+
+func (c *Container) hasUnprovidedRoot() bool {
+	return c.root != nil && len(c.providedBy.Nodes(c.root)) == 0
+}
+
+func (c *Container) ensureMaps() {
+	if c.requiredBy != nil && c.providedBy != nil {
+		return
+	}
+
+	hasher := typeutil.MakeHasher()
+	c.requiredBy = newTypeNodeMap(hasher)
+	c.providedBy = newTypeNodeMap(hasher)
 }
 
 // A node is an element in a Container that can generate a code fragment to

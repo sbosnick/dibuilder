@@ -17,7 +17,7 @@ import (
 // static factories as a directed graph.Container implements the
 // graph.Directed interface from github.com/gonum/graph.
 type Container struct {
-	root       types.Type
+	rootnode   *rootNode
 	nodes      []node
 	providedBy *typeNodeMap
 	requiredBy *typeNodeMap
@@ -77,7 +77,7 @@ func (c *Container) From(node graph.Node) []graph.Node {
 	case *funcNode:
 		// provided root
 		if c.hasRoot() {
-			for _, provider := range c.providedBy.Nodes(c.root) {
+			for _, provider := range c.providedBy.Nodes(c.rootnode.requires()[0]) {
 				if provider == node {
 					nodes = append(nodes, rootNode{container: c})
 					break
@@ -141,14 +141,14 @@ func (c *Container) Edge(u graph.Node, v graph.Node) graph.Edge {
 // SetRoot sets the root type for the Container. A Container for which a root
 // type has been set has a root node.
 func (c *Container) SetRoot(root types.Type) {
-	c.root = root
+	c.rootnode = newRootNode(c, root)
 }
 
 // Root returns the root node of the container or ErrNoRoot is a root
 // has not been set.
 func (c *Container) Root() (graph.Node, error) {
 	if c.hasRoot() {
-		return rootNode{container: c}, nil
+		return *c.rootnode, nil
 	}
 
 	return nil, ErrNoRoot
@@ -187,11 +187,11 @@ func (c *Container) AddFunc(function *types.Func) error {
 }
 
 func (c *Container) hasRoot() bool {
-	return c.root != nil
+	return c.rootnode != nil
 }
 
 func (c *Container) hasUnprovidedRoot() bool {
-	return c.root != nil && len(c.providedBy.Nodes(c.root)) == 0
+	return c.rootnode != nil && len(c.providedBy.Nodes(c.rootnode.requires()[0])) == 0
 }
 
 func (c *Container) ensureMaps() {

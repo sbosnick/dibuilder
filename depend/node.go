@@ -20,6 +20,14 @@ const (
 // at most one rootNode in a given Container.
 type rootNode struct {
 	container *Container
+	root      types.Type
+}
+
+func newRootNode(container *Container, root types.Type) *rootNode {
+	return &rootNode{
+		container: container,
+		root:      root,
+	}
 }
 
 func (r rootNode) ID() int {
@@ -31,7 +39,7 @@ func (r rootNode) Generate() {
 }
 
 func (r rootNode) requires() []types.Type {
-	return []types.Type{r.container.root}
+	return []types.Type{r.root}
 }
 
 func (r rootNode) provides() []types.Type {

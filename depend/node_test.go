@@ -9,6 +9,7 @@ import (
 	"go/types"
 	"testing"
 
+	"github.com/cheekybits/is"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -60,6 +61,7 @@ func TestRootNodeProvidesNothing(t *testing.T) {
 }
 
 func TestRootNodeRequiresTypeSetOnContainer(t *testing.T) {
+	is := is.New(t)
 	expected := types.Typ[types.Int]
 	container := &Container{}
 	container.SetRoot(expected)
@@ -68,8 +70,17 @@ func TestRootNodeRequiresTypeSetOnContainer(t *testing.T) {
 	sutnode := sut.(rootNode)
 	requires := sutnode.requires()
 
-	assert.Len(t, requires, 1, "Unexpected number of required types on rootNode")
-	assert.Contains(t, requires, expected, "rootNode did not required the expected type.")
+	is.Equal(len(requires), 1)
+	is.OK(containsType(requires, expected))
+}
+
+func containsType(list []types.Type, expectedItem types.Type) bool {
+	for _, item := range list {
+		if item == expectedItem {
+			return true
+		}
+	}
+	return false
 }
 
 func TestMissingNodeRequiresNothing(t *testing.T) {

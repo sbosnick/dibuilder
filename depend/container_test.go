@@ -54,10 +54,13 @@ func TestZeroContainerReturnsOneNode(t *testing.T) {
 }
 
 func TestZeroContainerReturnsMissingNode(t *testing.T) {
+	is := is.New(t)
+
 	sut := &Container{}
 	nodes := sut.Nodes()
 
-	assert.IsType(t, missingNode{}, nodes[0], "Unexpected node type")
+	is.OK(containsMissingNode(nodes))
+	//assert.IsType(t, missingNode{}, nodes[0], "Unexpected node type")
 }
 
 func TestNodeOfZeroContainerHasNoFromNodes(t *testing.T) {
@@ -174,7 +177,7 @@ func getRootNode(nodes []graph.Node) *rootNode {
 
 func containsMissingNode(nodes []graph.Node) bool {
 	for _, node := range nodes {
-		if _, ok := node.(missingNode); ok {
+		if _, ok := node.(*missingNode); ok {
 			return true
 		}
 	}

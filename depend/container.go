@@ -17,10 +17,11 @@ import (
 // static factories as a directed graph.Container implements the
 // graph.Directed interface from github.com/gonum/graph.
 type Container struct {
-	rootnode   *rootNode
-	nodes      []commonNode
-	providedBy *typeNodeMap
-	requiredBy *typeNodeMap
+	rootnode    *rootNode
+	missingNode *missingNode
+	nodes       []commonNode
+	providedBy  *typeNodeMap
+	requiredBy  *typeNodeMap
 }
 
 // Has returns whether a node exists within the Container.
@@ -39,7 +40,7 @@ func (c *Container) Has(node graph.Node) bool {
 func (c *Container) Nodes() []graph.Node {
 	var nodes []graph.Node
 
-	nodes = append(nodes, missingNode{container: c})
+	c.ensureMissingNode()
 
 	for _, node := range c.nodes {
 		nodes = append(nodes, node)
@@ -52,17 +53,7 @@ func (c *Container) Nodes() []graph.Node {
 func (c *Container) From(node graph.Node) []graph.Node {
 	var nodes []graph.Node
 
-	switch node := node.(type) {
-	case missingNode:
-		for _, typ := range c.requiredBy.Types() {
-			if len(c.providedBy.Nodes(typ)) == 0 {
-				for _, reqnode := range c.requiredBy.Nodes(typ) {
-					nodes = append(nodes, reqnode)
-				}
-			}
-		}
-
-	case commonNode:
+	if node, ok := node.(commonNode); ok {
 		for _, provide := range node.provides() {
 			for _, requirer := range c.requiredBy.Nodes(provide) {
 				nodes = append(nodes, requirer)
@@ -80,7 +71,7 @@ func (c *Container) To(node graph.Node) []graph.Node {
 	switch node.(type) {
 	case *rootNode:
 		if c.hasRoot() {
-			nodes = append(nodes, missingNode{container: c})
+			nodes = append(nodes, c.getMissingNode())
 		}
 	}
 
@@ -161,6 +152,18 @@ func (c *Container) AddFunc(function *types.Func) error {
 
 func (c *Container) hasRoot() bool {
 	return c.rootnode != nil
+}
+
+func (c *Container) getMissingNode() *missingNode {
+	c.ensureMissingNode()
+	return c.missingNode
+}
+
+func (c *Container) ensureMissingNode() {
+	if c.missingNode == nil {
+		c.missingNode = newMissingNode(c, c.nextID())
+		c.nodes = append(c.nodes, c.missingNode)
+	}
 }
 
 func (c *Container) ensureMaps() {

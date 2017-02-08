@@ -14,13 +14,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestMissingNodeIDIsNegative(t *testing.T) {
-	sut := missingNode{}
-	id := sut.ID()
-
-	assert.Condition(t, func() bool { return id < 0 }, "Non-negative ID()")
-}
-
 func TestRootNodeWithNonNegativeIDReturnsExpectedID(t *testing.T) {
 	is := is.New(t)
 	expected := 1

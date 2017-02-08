@@ -6,12 +6,6 @@ package depend
 
 import "go/types"
 
-// The fixed ID's used for the single-node-per-container notes. These must
-// be negative.
-const (
-	missingNodeID int = -1
-)
-
 // A rootNode generates a code fragment to return the instance of its one
 // required type from the builder function. This type is the anchor of the
 // Container and it is expected that all other (useful) nodes will be a part
@@ -65,10 +59,15 @@ func (r rootNode) getContainer() *Container {
 // missingNode to any other nodes.
 type missingNode struct {
 	container *Container
+	id        int
+}
+
+func newMissingNode(container *Container, id int) *missingNode {
+	return &missingNode{container: container, id: id}
 }
 
 func (m missingNode) ID() int {
-	return missingNodeID
+	return m.id
 }
 
 func (m missingNode) Generate() {
@@ -80,7 +79,19 @@ func (m missingNode) requires() []types.Type {
 }
 
 func (m missingNode) provides() []types.Type {
-	return nil
+	if m.container.requiredBy == nil || m.container.providedBy == nil {
+		return nil
+	}
+
+	var result []types.Type
+
+	for _, typ := range m.container.requiredBy.Types() {
+		if len(m.container.providedBy.Nodes(typ)) == 0 {
+			result = append(result, typ)
+		}
+	}
+
+	return result
 }
 
 func (m missingNode) getContainer() *Container {

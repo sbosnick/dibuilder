@@ -26,14 +26,10 @@ type Container struct {
 
 // Has returns whether a node exists within the Container.
 func (c *Container) Has(node graph.Node) bool {
-	switch n := node.(type) {
-	case missingNode:
-		return n.container == c
-	case commonNode:
-		return n.getContainer() == c && n.ID() < c.nextID()
-	default:
-		return false
+	if node, ok := node.(commonNode); ok {
+		return node.getContainer() == c && node.ID() < c.nextID()
 	}
+	return false
 }
 
 // Nodes returns all of the nodes within the Container.

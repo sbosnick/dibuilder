@@ -29,11 +29,13 @@ func TestContainerDoesNotHasForeignNodeType(t *testing.T) {
 }
 
 func TestContainerHasMissingNode(t *testing.T) {
+	is := is.New(t)
+
 	sut := Container{}
-	missing := missingNode{container: &sut}
+	missing := findMissingNode(sut.Nodes())
 	result := sut.Has(missing)
 
-	assert.True(t, result, "Container did not have a missingNode")
+	is.OK(result)
 }
 
 func TestContainerDoesNotHasMissingNodeForOtherContainer(t *testing.T) {
@@ -369,6 +371,15 @@ func findFuncNodeForFunction(nodes []graph.Node, function *types.Func) graph.Nod
 		}
 	}
 
+	return nil
+}
+
+func findMissingNode(nodes []graph.Node) graph.Node {
+	for _, node := range nodes {
+		if missing, ok := node.(*missingNode); ok {
+			return missing
+		}
+	}
 	return nil
 }
 

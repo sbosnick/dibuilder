@@ -66,13 +66,26 @@ func (c *Container) From(node graph.Node) []graph.Node {
 
 // To returns all nodes that can reach directly to the given node.
 func (c *Container) To(node graph.Node) []graph.Node {
-	var nodes []graph.Node
+	c.ensureMissingNode()
 
-	switch node.(type) {
-	case *rootNode:
-		if c.hasRoot() {
-			nodes = append(nodes, c.getMissingNode())
+	var nodes []graph.Node
+	var missing bool = false
+
+	if node, ok := node.(commonNode); ok {
+		for _, require := range node.requires() {
+			providers := c.providedBy.Nodes(require)
+			if len(providers) == 0 {
+				missing = true
+				continue
+			}
+			for _, provider := range providers {
+				nodes = append(nodes, provider)
+			}
 		}
+	}
+
+	if missing {
+		nodes = append(nodes, c.missingNode)
 	}
 
 	return nodes
@@ -152,11 +165,6 @@ func (c *Container) AddFunc(function *types.Func) error {
 
 func (c *Container) hasRoot() bool {
 	return c.rootnode != nil
-}
-
-func (c *Container) getMissingNode() *missingNode {
-	c.ensureMissingNode()
-	return c.missingNode
 }
 
 func (c *Container) ensureMissingNode() {

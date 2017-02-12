@@ -121,7 +121,7 @@ func (c *Container) Edge(u graph.Node, v graph.Node) graph.Edge {
 // SetRoot sets the root type for the Container. A Container for which a root
 // type has been set has a root node.
 func (c *Container) SetRoot(root types.Type) error {
-	if c.hasRoot() {
+	if c.rootnode != nil {
 		return ErrRootAlreadySet
 	}
 
@@ -133,7 +133,7 @@ func (c *Container) SetRoot(root types.Type) error {
 // Root returns the root node of the container or ErrNoRoot is a root
 // has not been set.
 func (c *Container) Root() (graph.Node, error) {
-	if c.hasRoot() {
+	if c.rootnode != nil {
 		return c.rootnode, nil
 	}
 
@@ -160,10 +160,6 @@ func (c *Container) AddFunc(function *types.Func) error {
 	c.addNode(node)
 
 	return nil
-}
-
-func (c *Container) hasRoot() bool {
-	return c.rootnode != nil
 }
 
 func (c *Container) ensureMissingNode() {

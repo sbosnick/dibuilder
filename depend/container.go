@@ -196,15 +196,3 @@ func (c *Container) addNode(newNode commonNode) {
 		c.requiredBy.AddNode(typ, newNode)
 	}
 }
-
-// A node is an element in a Container that can generate a code fragment to
-// produce instances of specific types but requires that instances  of other types
-// be produced first. The generated code uses the required instances of
-// the other types to provide the instances of the specific types.
-type commonNode interface {
-	graph.Node
-	Generate()
-	requires() []types.Type
-	provides() []types.Type
-	getContainer() *Container
-}

@@ -117,7 +117,7 @@ func newFuncNode(container *Container, id int, function *types.Func) (*funcNode,
 	}
 
 	// Check for an error return type that is not the last return type
-	if tuppleHasEarlyError(sig.Results()) {
+	if tupleHasEarlyError(sig.Results()) {
 		return nil, newInvalidFuncError(function, "error return type must be last return type")
 	}
 
@@ -170,7 +170,7 @@ func extractTypesForTuple(tuple *types.Tuple, excludeError bool) []types.Type {
 	return result
 }
 
-func tuppleHasEarlyError(tuple *types.Tuple) bool {
+func tupleHasEarlyError(tuple *types.Tuple) bool {
 	errType := types.Universe.Lookup("error").Type()
 
 	// Note: "tuple.Len() - 1" is correct because an error

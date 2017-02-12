@@ -95,10 +95,13 @@ func (c *Container) HasEdgeBetween(x graph.Node, y graph.Node) bool {
 
 // HasEdgeFromTo returns whether an edge exists in the Container from u to v.
 func (c *Container) HasEdgeFromTo(u graph.Node, v graph.Node) bool {
-	switch u.(type) {
-	case missingNode:
-		if _, ok := v.(*rootNode); ok && c.hasRoot() {
-			return true
+	if u, ok := u.(commonNode); ok {
+		for _, provide := range u.provides() {
+			for _, provider := range c.requiredBy.Nodes(provide) {
+				if provider == v {
+					return true
+				}
+			}
 		}
 	}
 

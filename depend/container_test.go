@@ -383,6 +383,15 @@ func findMissingNode(nodes []graph.Node) graph.Node {
 	return nil
 }
 
+func findRootNode(nodes []graph.Node) graph.Node {
+	for _, node := range nodes {
+		if root, ok := node.(*rootNode); ok {
+			return root
+		}
+	}
+	return nil
+}
+
 func TestContainerWithFuncProvidingRequiredFuncHasEdgeFromFunc(t *testing.T) {
 	is := is.New(t)
 	function1 := makeFunc(nil, types.Typ[types.Int], false)
@@ -439,4 +448,45 @@ func TestContainerWithFuncProvidingRootHasEdgeToRoot(t *testing.T) {
 
 	node := findFuncNodeForFunction(sut.Nodes(), function)
 	is.OK(node, containsNode(nodes, node)())
+}
+
+func TestContainerWithUnsatifiedFuncRequirementHasEdgeFromMissingToFunc(t *testing.T) {
+	is := is.New(t)
+	function := makeFunc(types.Typ[types.Int], types.Typ[types.Bool], false)
+
+	sut := &Container{}
+	sut.AddFunc(function)
+	u := findMissingNode(sut.Nodes())
+	v := findFuncNodeForFunction(sut.Nodes(), function)
+	result := sut.HasEdgeFromTo(u, v)
+
+	is.OK(u, v, result)
+}
+
+func TestContainerWithFuncProvidingRootHasEdgeFromFuncToRoot(t *testing.T) {
+	is := is.New(t)
+
+	sut, typ := createRootedContainer()
+	function := makeFunc(nil, typ, false)
+	sut.AddFunc(function)
+	u := findFuncNodeForFunction(sut.Nodes(), function)
+	v := findRootNode(sut.Nodes())
+	result := sut.HasEdgeFromTo(u, v)
+
+	is.OK(u, v, result)
+}
+
+func TestContainerWithFuncProvidingRequiredFuncHasEdgeFromFuncToFunc(t *testing.T) {
+	is := is.New(t)
+	function1 := makeFunc(nil, types.Typ[types.Int], false)
+	function2 := makeFunc(types.Typ[types.Int], types.Typ[types.Bool], false)
+
+	sut := &Container{}
+	sut.AddFunc(function1)
+	sut.AddFunc(function2)
+	u := findFuncNodeForFunction(sut.Nodes(), function1)
+	v := findFuncNodeForFunction(sut.Nodes(), function2)
+	result := sut.HasEdgeFromTo(u, v)
+
+	is.OK(u, v, result)
 }

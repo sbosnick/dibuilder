@@ -144,14 +144,14 @@ func TestRootedContainerHasNoNodesFromRoot(t *testing.T) {
 }
 
 func TestRootedContinerHasRootNodeFromMissingNode(t *testing.T) {
+	is := is.New(t)
+
 	sut, _ := createRootedContainer()
-	missing := missingNode{container: sut}
+	missing := findMissingNode(sut.Nodes())
 	fromNodes := sut.From(missing)
 
 	root, _ := sut.Root()
-	assert.Condition(t, containsNode(fromNodes, root),
-		"No edge from missingNode to rootNode: %v does not contain %v",
-		getNodeIDs(fromNodes), root.ID())
+	is.OK(containsNode(fromNodes, root))
 }
 
 func TestRootedContainerHasMissingNodeToRootNode(t *testing.T) {
@@ -308,7 +308,7 @@ func TestContainerWithFuncProvidingRequiredFuncHasEdgeFromFunc(t *testing.T) {
 	nodes := sut.From(node1)
 
 	node2 := findFuncNodeForFunction(sut.Nodes(), function2)
-	is.OK(containsNode(nodes, node2)())
+	is.OK(containsNode(nodes, node2))
 }
 
 func TestContainerWithUnsatifiedFuncRequirmentHasMissingEdgeToFunc(t *testing.T) {
@@ -337,7 +337,7 @@ func TestContainerWithFuncProvidingRequiredFuncHasEdgeToFunc(t *testing.T) {
 	nodes := sut.To(node2)
 
 	node1 := findFuncNodeForFunction(sut.Nodes(), function1)
-	is.OK(containsNode(nodes, node1)())
+	is.OK(containsNode(nodes, node1))
 }
 
 func TestContainerWithFuncProvidingRootHasEdgeToRoot(t *testing.T) {
@@ -350,7 +350,7 @@ func TestContainerWithFuncProvidingRootHasEdgeToRoot(t *testing.T) {
 	nodes := sut.To(root)
 
 	node := findFuncNodeForFunction(sut.Nodes(), function)
-	is.OK(node, containsNode(nodes, node)())
+	is.OK(node, containsNode(nodes, node))
 }
 
 func TestContainerWithUnsatifiedFuncRequirementHasEdgeFromMissingToFunc(t *testing.T) {

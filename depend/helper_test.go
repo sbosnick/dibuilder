@@ -9,19 +9,16 @@ import (
 	"go/types"
 
 	"github.com/gonum/graph"
-	"github.com/stretchr/testify/assert"
 )
 
-func containsNode(nodes []graph.Node, expected graph.Node) assert.Comparison {
-	return func() bool {
-		for _, node := range nodes {
-			if node.ID() == expected.ID() {
-				return true
-			}
+func containsNode(nodes []graph.Node, expected graph.Node) bool {
+	for _, node := range nodes {
+		if node.ID() == expected.ID() {
+			return true
 		}
-
-		return false
 	}
+
+	return false
 }
 
 func getRootNode(nodes []graph.Node) *rootNode {

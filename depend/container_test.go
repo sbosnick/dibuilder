@@ -5,12 +5,10 @@
 package depend
 
 import (
-	"go/token"
 	"go/types"
 	"testing"
 
 	"github.com/cheekybits/is"
-	"github.com/gonum/graph"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -88,17 +86,6 @@ func TestZeroContainerRootIsError(t *testing.T) {
 	assert.Error(t, err, "expected error not returned")
 }
 
-func createRootedContainer() (*Container, types.Type) {
-	pkg := types.NewPackage("path", "mypackage")
-	name := types.NewTypeName(token.NoPos, pkg, "MyIntType", nil)
-	typ := types.NewNamed(name, types.Typ[types.Int], nil)
-
-	container := &Container{}
-	_ = container.SetRoot(typ)
-
-	return container, typ
-}
-
 func TestRootedContainerRootIsRootNode(t *testing.T) {
 	is := is.New(t)
 
@@ -154,46 +141,6 @@ func TestRootedContainerHasNoNodesFromRoot(t *testing.T) {
 	fromNodes := sut.From(root)
 
 	assert.Empty(t, fromNodes)
-}
-
-func containsNode(nodes []graph.Node, expected graph.Node) assert.Comparison {
-	return func() bool {
-		for _, node := range nodes {
-			if node.ID() == expected.ID() {
-				return true
-			}
-		}
-
-		return false
-	}
-}
-
-func getRootNode(nodes []graph.Node) *rootNode {
-	for _, node := range nodes {
-		if n, ok := node.(*rootNode); ok {
-			return n
-		}
-	}
-	return nil
-}
-
-func containsMissingNode(nodes []graph.Node) bool {
-	for _, node := range nodes {
-		if _, ok := node.(*missingNode); ok {
-			return true
-		}
-	}
-	return false
-}
-
-func getNodeIDs(nodes []graph.Node) []int {
-	var ids []int
-
-	for _, node := range nodes {
-		ids = append(ids, node.ID())
-	}
-
-	return ids
 }
 
 func TestRootedContinerHasRootNodeFromMissingNode(t *testing.T) {
@@ -316,20 +263,6 @@ func TestContainerNodesIncludesFuncNodeAfterAddFunc(t *testing.T) {
 
 }
 
-func hasFuncNodeForFunction(nodes []graph.Node, function *types.Func) func() bool {
-	return func() bool {
-		for _, node := range nodes {
-			if fn, ok := node.(*funcNode); ok {
-				if fn.function == function {
-					return true
-				}
-			}
-		}
-
-		return false
-	}
-}
-
 func TestRootedContainerWithFuncProvidingRootDoesNotHaveMissingEdge(t *testing.T) {
 	sut, typ := createRootedContainer()
 	sut.AddFunc(makeFunc(nil, typ, false))
@@ -360,36 +293,6 @@ func TestContainerWithFuncProvidingRootHasEdgeFromFunc(t *testing.T) {
 
 	rootnode := getRootNode(nodes)
 	is.OK(rootnode)
-}
-
-func findFuncNodeForFunction(nodes []graph.Node, function *types.Func) graph.Node {
-	for _, node := range nodes {
-		if fn, ok := node.(*funcNode); ok {
-			if fn.function == function {
-				return fn
-			}
-		}
-	}
-
-	return nil
-}
-
-func findMissingNode(nodes []graph.Node) graph.Node {
-	for _, node := range nodes {
-		if missing, ok := node.(*missingNode); ok {
-			return missing
-		}
-	}
-	return nil
-}
-
-func findRootNode(nodes []graph.Node) graph.Node {
-	for _, node := range nodes {
-		if root, ok := node.(*rootNode); ok {
-			return root
-		}
-	}
-	return nil
 }
 
 func TestContainerWithFuncProvidingRequiredFuncHasEdgeFromFunc(t *testing.T) {

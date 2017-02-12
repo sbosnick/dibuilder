@@ -68,15 +68,6 @@ func TestRootNodeRequiresTypeSetOnContainer(t *testing.T) {
 	is.OK(containsType(requires, expected))
 }
 
-func containsType(list []types.Type, expectedItem types.Type) bool {
-	for _, item := range list {
-		if item == expectedItem {
-			return true
-		}
-	}
-	return false
-}
-
 func TestMissingNodeRequiresNothing(t *testing.T) {
 	container := &Container{}
 
@@ -91,28 +82,6 @@ func TestMissingNodeProvidesNothing(t *testing.T) {
 	sut := missingNode{container: container}
 
 	assert.Len(t, sut.provides(), 0, "missingNode unexpectedly provides some types")
-}
-
-func makeFunc(param, ret types.Type, returnsErr bool) *types.Func {
-	var paramTuple *types.Tuple
-	if param == nil {
-		paramTuple = types.NewTuple()
-	} else {
-		paramTuple = types.NewTuple(types.NewVar(token.NoPos, nil, "", param))
-	}
-
-	resultVar := types.NewVar(token.NoPos, nil, "", ret)
-	var retTuple *types.Tuple
-	if returnsErr {
-		errObj := types.Universe.Lookup("error")
-		errVar := types.NewVar(token.NoPos, nil, "", errObj.Type())
-		retTuple = types.NewTuple(resultVar, errVar)
-	} else {
-		retTuple = types.NewTuple(resultVar)
-	}
-
-	sig := types.NewSignature(nil, paramTuple, retTuple, false)
-	return types.NewFunc(token.NoPos, nil, "myfunc", sig)
 }
 
 func TestFuncNodeRequiresTypesOfFuncParameters(t *testing.T) {

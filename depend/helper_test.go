@@ -21,16 +21,6 @@ func containsNode(nodes []graph.Node, expected graph.Node) bool {
 	return false
 }
 
-func getNodeIDs(nodes []graph.Node) []int {
-	var ids []int
-
-	for _, node := range nodes {
-		ids = append(ids, node.ID())
-	}
-
-	return ids
-}
-
 func createRootedContainer() (*Container, types.Type) {
 	pkg := types.NewPackage("path", "mypackage")
 	name := types.NewTypeName(token.NoPos, pkg, "MyIntType", nil)

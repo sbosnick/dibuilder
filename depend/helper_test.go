@@ -11,16 +11,6 @@ import (
 	"github.com/gonum/graph"
 )
 
-func containsNode(nodes []graph.Node, expected graph.Node) bool {
-	for _, node := range nodes {
-		if node.ID() == expected.ID() {
-			return true
-		}
-	}
-
-	return false
-}
-
 func createRootedContainer() (*Container, types.Type) {
 	pkg := types.NewPackage("path", "mypackage")
 	name := types.NewTypeName(token.NoPos, pkg, "MyIntType", nil)

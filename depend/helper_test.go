@@ -21,15 +21,6 @@ func containsNode(nodes []graph.Node, expected graph.Node) bool {
 	return false
 }
 
-func containsMissingNode(nodes []graph.Node) bool {
-	for _, node := range nodes {
-		if _, ok := node.(*missingNode); ok {
-			return true
-		}
-	}
-	return false
-}
-
 func getNodeIDs(nodes []graph.Node) []int {
 	var ids []int
 

@@ -59,8 +59,7 @@ func TestZeroContainerReturnsMissingNode(t *testing.T) {
 	sut := &Container{}
 	nodes := sut.Nodes()
 
-	is.OK(containsMissingNode(nodes))
-	//assert.IsType(t, missingNode{}, nodes[0], "Unexpected node type")
+	is.OK(findMissingNode(nodes))
 }
 
 func TestNodeOfZeroContainerHasNoFromNodes(t *testing.T) {
@@ -161,7 +160,7 @@ func TestRootedContainerHasMissingNodeToRootNode(t *testing.T) {
 	root, _ := sut.Root()
 	toNodes := sut.To(root)
 
-	is.OK(containsMissingNode(toNodes))
+	is.OK(findMissingNode(toNodes))
 }
 
 func TestRootedContarainerHasNoNodesToMissingNode(t *testing.T) {
@@ -321,7 +320,7 @@ func TestContainerWithUnsatifiedFuncRequirmentHasMissingEdgeToFunc(t *testing.T)
 	is.OK(node)
 	nodes := sut.To(node)
 
-	is.OK(containsMissingNode(nodes))
+	is.OK(findMissingNode(nodes))
 }
 
 func TestContainerWithFuncProvidingRequiredFuncHasEdgeToFunc(t *testing.T) {

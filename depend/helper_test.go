@@ -21,15 +21,6 @@ func containsNode(nodes []graph.Node, expected graph.Node) bool {
 	return false
 }
 
-func getRootNode(nodes []graph.Node) *rootNode {
-	for _, node := range nodes {
-		if n, ok := node.(*rootNode); ok {
-			return n
-		}
-	}
-	return nil
-}
-
 func containsMissingNode(nodes []graph.Node) bool {
 	for _, node := range nodes {
 		if _, ok := node.(*missingNode); ok {

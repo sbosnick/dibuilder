@@ -129,9 +129,9 @@ func TestRootedContainerReturnsRootNode(t *testing.T) {
 	sut, typ := createRootedContainer()
 	nodes := sut.Nodes()
 
-	rootnode := getRootNode(nodes)
+	rootnode := findRootNode(nodes)
 	otherrootnode, _ := sut.Root()
-	is.OK(rootnode, rootnode.root == typ)
+	is.OK(rootnode, rootnode.(*rootNode).root == typ)
 	is.Equal(rootnode, otherrootnode)
 }
 
@@ -291,7 +291,7 @@ func TestContainerWithFuncProvidingRootHasEdgeFromFunc(t *testing.T) {
 	node := findFuncNodeForFunction(sut.Nodes(), function)
 	nodes := sut.From(node)
 
-	rootnode := getRootNode(nodes)
+	rootnode := findRootNode(nodes)
 	is.OK(rootnode)
 }
 

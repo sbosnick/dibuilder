@@ -251,14 +251,14 @@ func TestConainerHasFuncNodeAfterAddFunc(t *testing.T) {
 }
 
 func TestContainerNodesIncludesFuncNodeAfterAddFunc(t *testing.T) {
+	is := is.New(t)
 	function := makeFunc(types.Typ[types.Int], types.Typ[types.Bool], false)
 
 	sut := &Container{}
 	_ = sut.AddFunc(function)
 	nodes := sut.Nodes()
 
-	assert.Condition(t, hasFuncNodeForFunction(nodes, function),
-		"Nodes() did not contain a funcNode for the expected function")
+	is.OK(findFuncNodeForFunction(nodes, function))
 
 }
 
@@ -271,14 +271,14 @@ func TestRootedContainerWithFuncProvidingRootDoesNotHaveMissingEdge(t *testing.T
 }
 
 func TestContainerWithUnsatifiedFuncRequirmentHasMissingEdge(t *testing.T) {
+	is := is.New(t)
 	function := makeFunc(types.Typ[types.Int], types.Typ[types.Bool], false)
 
 	sut := &Container{}
 	_ = sut.AddFunc(function)
 	nodes := sut.From(missingNode{container: sut})
 
-	assert.Condition(t, hasFuncNodeForFunction(nodes, function),
-		"From() did not contain a funcNode for the expected function")
+	is.OK(findFuncNodeForFunction(nodes, function))
 }
 
 func TestContainerWithFuncProvidingRootHasEdgeFromFunc(t *testing.T) {

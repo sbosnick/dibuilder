@@ -72,20 +72,6 @@ func findRootNode(nodes []graph.Node) graph.Node {
 	return nil
 }
 
-func hasFuncNodeForFunction(nodes []graph.Node, function *types.Func) func() bool {
-	return func() bool {
-		for _, node := range nodes {
-			if fn, ok := node.(*funcNode); ok {
-				if fn.function == function {
-					return true
-				}
-			}
-		}
-
-		return false
-	}
-}
-
 func containsType(list []types.Type, expectedItem types.Type) bool {
 	for _, item := range list {
 		if item == expectedItem {

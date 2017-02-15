@@ -48,4 +48,52 @@ func (r rootNode) getContainer() *Container {
 	return r.container
 }
 
+// detectRootType returns the root Type, if any, from the slice of
+// Types provided. A Type is a root Type if its method set includes a
+// nullary method named "Run". If the provided slice of Types contains
+// more than one candidate root Type then detectRootType returns an
+// ErrAmbiguousRootDetected.
+func detectRootType(typs []types.Type) (types.Type, error) {
+	var result types.Type
+
+	for _, typ := range typs {
+		if isRunnableType(typ) {
+			if result != nil {
+				return nil, ErrAmbiguousRootDetected
+			}
+
+			result = typ
+		}
+	}
+
+	return result, nil
+}
+
+func isRunnableType(typ types.Type) bool {
+	methods := types.NewMethodSet(typ)
+
+	for i := 0; i < methods.Len(); i++ {
+		if function, ok := methods.At(i).Obj().(*types.Func); ok {
+			if isNullaryRunMethod(function) {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
+func isNullaryRunMethod(function *types.Func) bool {
+	if function.Name() != "Run" {
+		return false
+	}
+
+	sig, ok := function.Type().(*types.Signature)
+	if !ok {
+		return false
+	}
+
+	return sig.Params().Len() == 0 && sig.Results().Len() == 0
+}
+
 var _ commonNode = rootNode{}

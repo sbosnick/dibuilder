@@ -20,6 +20,10 @@ var (
 	// already been set on a Container for an operation that only allows
 	// the root to be set once.
 	ErrRootAlreadySet = errors.New("root already set for container")
+
+	// ErrAmbiguousRootDetected is the error used to indicate that an attempt
+	// to auto-detect the root has found more than one root candidate.
+	ErrAmbiguousRootDetected = errors.New("root auto-detection found ambiguous root candidates")
 )
 
 // An Error represents an error with an associated position in an

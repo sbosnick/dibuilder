@@ -118,9 +118,9 @@ func (c *Container) Edge(u graph.Node, v graph.Node) graph.Edge {
 	return nil
 }
 
-// SetRoot sets the root type for the Container. A Container for which a root
+// setRoot sets the root type for the Container. A Container for which a root
 // type has been set has a root node.
-func (c *Container) SetRoot(root types.Type) error {
+func (c *Container) setRoot(root types.Type) error {
 	if c.rootnode != nil {
 		return ErrRootAlreadySet
 	}
@@ -144,9 +144,15 @@ func (c *Container) Root() (graph.Node, error) {
 // AddFunc adds function to the Container. function should be a constructor
 // or other static factory. The non-error return types of function are made
 // available as components that can satisfy the components required by other
-// functions added to the container or by SetRoot. The parameters to the function
+// functions added to the container. The parameters to the function
 // are required to be satisfied by components in the Container for the Container
 // to be complete. function can have an error return type as its last return type.
+//
+// AddFunc will auto-detect root types that are provided by function. A root type
+// for this purpose is a types.Type whose method set includes a nullary method named
+// "Run". AddFunc will return an error if it auto-detects a second root type for the
+// Container.
+//
 // AddFunc will return an InvalidFuncError for a function with an error return type
 // in any position except the last. It will also return an InvalidFuncError if a
 // method is passed in as function.
@@ -158,6 +164,17 @@ func (c *Container) AddFunc(function *types.Func) error {
 	}
 
 	c.addNode(node)
+
+	root, err := detectRootType(node.provides())
+	if err != nil {
+		return err
+	}
+	if root != nil {
+		err = c.setRoot(root)
+		if err != nil {
+			return err
+		}
+	}
 
 	return nil
 }

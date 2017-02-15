@@ -17,7 +17,7 @@ func createRootedContainer() (*Container, types.Type) {
 	typ := types.NewNamed(name, types.Typ[types.Int], nil)
 
 	container := &Container{}
-	_ = container.SetRoot(typ)
+	_ = container.setRoot(typ)
 
 	return container, typ
 }
@@ -61,7 +61,7 @@ func containsType(list []types.Type, expectedItem types.Type) bool {
 	return false
 }
 
-func makeFunc(param, ret types.Type, returnsErr bool) *types.Func {
+func makeSignature(param, ret types.Type, returnsErr bool) *types.Signature {
 	var paramTuple *types.Tuple
 	if param == nil {
 		paramTuple = types.NewTuple()
@@ -69,16 +69,34 @@ func makeFunc(param, ret types.Type, returnsErr bool) *types.Func {
 		paramTuple = types.NewTuple(types.NewVar(token.NoPos, nil, "", param))
 	}
 
-	resultVar := types.NewVar(token.NoPos, nil, "", ret)
-	var retTuple *types.Tuple
+	var resultsVars []*types.Var
+	if ret != nil {
+		resultsVars = append(resultsVars, types.NewVar(token.NoPos, nil, "", ret))
+	}
 	if returnsErr {
 		errObj := types.Universe.Lookup("error")
-		errVar := types.NewVar(token.NoPos, nil, "", errObj.Type())
-		retTuple = types.NewTuple(resultVar, errVar)
-	} else {
-		retTuple = types.NewTuple(resultVar)
+		resultsVars = append(resultsVars, types.NewVar(token.NoPos, nil, "", errObj.Type()))
 	}
+	retTuple := types.NewTuple(resultsVars...)
 
-	sig := types.NewSignature(nil, paramTuple, retTuple, false)
+	return types.NewSignature(nil, paramTuple, retTuple, false)
+}
+
+func makeFunc(param, ret types.Type, returnsErr bool) *types.Func {
+	sig := makeSignature(param, ret, returnsErr)
 	return types.NewFunc(token.NoPos, nil, "myfunc", sig)
+}
+
+func makeRunnableType(name string) types.Type {
+	typename := types.NewTypeName(token.NoPos, nil, name, nil)
+	named := types.NewNamed(typename, types.Typ[types.Int], nil)
+	sig := types.NewSignature(
+		types.NewParam(token.NoPos, nil, "m", named),
+		types.NewTuple(),
+		types.NewTuple(),
+		false)
+	function := types.NewFunc(token.NoPos, nil, "Run", sig)
+	named.AddMethod(function)
+
+	return named
 }

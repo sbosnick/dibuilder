@@ -20,7 +20,7 @@ package main
 // go:generate dibuilder github.com/sbosnick/myproject/internal/components/...
 
 import (
-        github.com/sbosnick/dibuilder/run
+        "github.com/sbosnick/dibuilder/run"
 )
 
 func main() {

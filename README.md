@@ -29,15 +29,15 @@ func main() {
 
 ```
 
-Running `go generate` will generate a `buildroot.go` that has a `buildRoot` function
-with the following signature:
+Running `go generate` will generate a `buildroot.go` file that has a `buildRoot`
+function with the following signature:
 
 ```golang
 func buildRoot() rootpkg.RootType
 ```
 
-where `rootpkg.RootType` is a specific type discovered by dibuilder where that type
-implements the following interface (from package `github.com/sbosnick/dibuilder/run`):
+where `rootpkg.RootType` is a specific type discovered by dibuilder that implements
+the following interface (from package `github.com/sbosnick/dibuilder/run`):
 
 ```golang
 type Runner interface {
@@ -57,7 +57,7 @@ and will end by returning the result of a final constructor whose return type im
 You can get dibuilder by executing
 
 ```
-go get -u github/sbosnick/dibuilder
+go get -u github.com/sbosnick/dibuilder
 ```
 
 # Concepts
@@ -65,7 +65,7 @@ The following concepts will help to explain what dibuilder is doing.
 
 | **Concept**        | **Description**                                                              |
 |--------------------|------------------------------------------------------------------------------|
-| Component          | the non-`error` return types of a constructor from a user specified package  |
+| Component          | the non-error return types of a constructor from a user specified package    |
 | Container          | a type used by dibuilder to hold descriptions of Components                  |
 | Requirement        | the types of the parameters to the constructor of a Component in a Container |
 | Provided Component | the Components that can be constructed by a Container                        |

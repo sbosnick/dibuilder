@@ -1,3 +1,4 @@
+[![GoDoc](https://godoc.org/github.com/sbosnick/dibuilder?status.svg)](https://godoc.org/github.com/sbosnick/dibuilder)
 # Introduction
 dibuilder is a tool to generate a dependancy injection builder at build time. It is 
 designed to generate a function that creates the components which will together make

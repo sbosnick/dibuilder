@@ -88,8 +88,7 @@ func makeFunc(param, ret types.Type, returnsErr bool) *types.Func {
 }
 
 func makeRunnableType(name string) types.Type {
-	typename := types.NewTypeName(token.NoPos, nil, name, nil)
-	named := types.NewNamed(typename, types.Typ[types.Int], nil)
+	named := makeNamedType(name, types.Typ[types.Int])
 	sig := types.NewSignature(
 		types.NewParam(token.NoPos, nil, "m", named),
 		types.NewTuple(),
@@ -99,4 +98,9 @@ func makeRunnableType(name string) types.Type {
 	named.AddMethod(function)
 
 	return named
+}
+
+func makeNamedType(name string, underlying types.Type) *types.Named {
+	typename := types.NewTypeName(token.NoPos, nil, name, nil)
+	return types.NewNamed(typename, underlying, nil)
 }

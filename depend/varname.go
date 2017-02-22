@@ -13,9 +13,7 @@ import (
 	"unicode"
 )
 
-type varBasenameGen struct {
-	next uint
-}
+type varBasenameGen uint
 
 func (v *varBasenameGen) getBasename(typ types.Type) string {
 	var named *types.Named
@@ -47,8 +45,8 @@ func (v *varBasenameGen) getBasename(typ types.Type) string {
 	}
 
 	if varname == "" {
-		varname = generateVarName(v.next)
-		v.next++
+		varname = generateVarName(uint(*v))
+		*v++
 	}
 
 	return varname

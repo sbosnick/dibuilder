@@ -66,7 +66,7 @@ func TestGetBasename(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		sut := &varBasenameGen{}
+		var sut varBasenameGen
 		result := sut.getBasename(test.typ)
 
 		is.Equal(result, test.expected)
@@ -92,7 +92,7 @@ func TestGetBasenameForMaps(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		sut := varBasenameGen{}
+		var sut varBasenameGen
 		typ := types.NewMap(test.key, test.value)
 		result := sut.getBasename(typ)
 
@@ -110,7 +110,7 @@ func TestGetBasenameIncrementsGeneratedNames(t *testing.T) {
 		{"var1", types.Typ[types.Uint]},
 	}
 
-	sut := varBasenameGen{}
+	var sut varBasenameGen
 	for _, test := range tests {
 		result := sut.getBasename(test.typ)
 
@@ -122,7 +122,7 @@ func TestGetBasenameDisallowsUnderscores(t *testing.T) {
 	is := is.New(t)
 	typ := makeNamedType("My_Int", types.Typ[types.Int])
 
-	sut := varBasenameGen{}
+	var sut varBasenameGen
 	result := sut.getBasename(typ)
 
 	is.Equal("var0", result)

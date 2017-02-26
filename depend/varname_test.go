@@ -108,8 +108,8 @@ func TestGetBasenameIncrementsGeneratedNames(t *testing.T) {
 		expected string
 		typ      types.Type
 	}{
-		{"var0", types.Typ[types.Int]},
-		{"var1", types.Typ[types.Uint]},
+		{"var0", types.NewInterface(nil, nil)},
+		{"var1", types.NewInterface(nil, nil)},
 	}
 
 	var sut varBasenameGen
@@ -140,9 +140,9 @@ func TestVarNamerGivesExpectedNames(t *testing.T) {
 		typ      types.Type
 		instance int
 	}{
-		{"var0", basic, 0},
+		{"int", basic, 0},
 		{"myInt", named, 0},
-		{"var0_1", basic, 1},
+		{"int_1", basic, 1},
 		{"myInt_1", named, 1},
 		{"myInt_A", other, 0},
 		{"myInt_A_1", other, 1},

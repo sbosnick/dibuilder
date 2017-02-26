@@ -9,6 +9,8 @@ import (
 	"go/types"
 	"testing"
 
+	"golang.org/x/tools/go/types/typeutil"
+
 	"github.com/cheekybits/is"
 )
 
@@ -126,4 +128,58 @@ func TestGetBasenameDisallowsUnderscores(t *testing.T) {
 	result := sut.getBasename(typ)
 
 	is.Equal("var0", result)
+}
+
+func TestVarNamerGivesExpectedNames(t *testing.T) {
+	is := is.New(t)
+	basic := types.Typ[types.Int]
+	named := makeNamedType("MyInt", basic)
+	other := makeNamedType("MyInt", basic)
+	tests := []struct {
+		expected string
+		typ      types.Type
+		instance int
+	}{
+		{"var0", basic, 0},
+		{"myInt", named, 0},
+		{"var0_1", basic, 1},
+		{"myInt_1", named, 1},
+		{"myInt_A", other, 0},
+		{"myInt_A_1", other, 1},
+	}
+
+	// note that the test cases are not independent
+	// this is testing the accumulation of state in sut
+	sut := newVarNamer(typeutil.MakeHasher())
+	for _, test := range tests {
+		result := sut.Name(test.typ, test.instance)
+
+		is.Equal(result, test.expected)
+	}
+}
+
+func TestBuildTypeName(t *testing.T) {
+	is := is.New(t)
+	tests := []struct {
+		expected string
+		basename string
+		i        int
+	}{
+		{"base", "base", 0},
+		{"base_A", "base", 1},
+		{"base_B", "base", 2},
+		{"base_Y", "base", 25},
+		{"base_Z", "base", 26},
+		{"base_BA", "base", 27},
+		{"base_BZ", "base", 52},
+		{"base_CA", "base", 53},
+		{"func_A", "func", 0},
+		{"return_A", "return", 0},
+	}
+
+	for _, test := range tests {
+		result := buildTypeName(test.basename, test.i)
+
+		is.Equal(result, test.expected)
+	}
 }

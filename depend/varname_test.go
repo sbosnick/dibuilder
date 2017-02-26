@@ -51,7 +51,7 @@ func TestGetBasename(t *testing.T) {
 		typ      types.Type
 	}{
 		{"myName", named},
-		{"var0", basic},
+		{"int", basic},
 		{"myName", types.NewPointer(named)},
 		{"var0", types.NewPointer(basic)},
 		{"myName", types.NewArray(named, 3)},

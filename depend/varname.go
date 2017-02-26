@@ -55,6 +55,8 @@ func (v *varBasenameGen) getBasename(typ types.Type) string {
 	switch typ := typ.(type) {
 	case *types.Map:
 		varname = makeMapVarName(typ.Key(), typ.Elem())
+	case *types.Basic:
+		varname = typ.Name()
 	case *types.Named:
 		named = typ
 	case elemProvider:

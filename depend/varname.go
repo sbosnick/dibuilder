@@ -43,7 +43,7 @@ func (v *varNamer) Name(typ types.Type, instance int) string {
 		v.varNames.Set(typ, name)
 	}
 
-	return buildFullName(name, instance)
+	return buildFullName(getVarPrefix(typ), name, instance)
 }
 
 type varBasenameGen uint
@@ -204,15 +204,21 @@ func buildTypeName(basename string, i int) string {
 
 var suffixMap = [...]rune{'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'}
 
-func buildFullName(name string, i int) string {
-	if i == 0 {
+func buildFullName(prefix string, name string, i int) string {
+	if i == 0 && prefix == "" {
 		return name
 	}
 
 	var out bytes.Buffer
+	if prefix != "" {
+		out.WriteString(prefix)
+		out.WriteRune('_')
+	}
 	out.WriteString(name)
-	out.WriteRune('_')
-	out.WriteString(strconv.Itoa(i))
+	if i != 0 {
+		out.WriteRune('_')
+		out.WriteString(strconv.Itoa(i))
+	}
 
 	return out.String()
 }

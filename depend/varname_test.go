@@ -140,9 +140,9 @@ func TestVarNamerGivesExpectedNames(t *testing.T) {
 		typ      types.Type
 		instance int
 	}{
-		{"int", basic, 0},
+		{"b_int", basic, 0},
 		{"myInt", named, 0},
-		{"int_1", basic, 1},
+		{"b_int_1", basic, 1},
 		{"myInt_1", named, 1},
 		{"myInt_A", other, 0},
 		{"myInt_A_1", other, 1},
